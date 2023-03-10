@@ -13,8 +13,31 @@
 --  DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 --  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-create schema if not exists template;
+create schema if not exists glutz;
 
---
--- Todo: create tables and database objects necessary for this app like tables persisting configuration
---
+create table if not exists glutz.config
+(
+    config_id           bigserial primary key,
+    username            text not null,
+    password            text not null,
+    api_token           text not null,
+    url                 text not null,
+    active              boolean default false,
+    enable              boolean default false,
+    request_timeout     integer default 120,
+    refresh_interval    integer default 60,
+    project_ids          text[]
+);
+
+create table if not exists glutz.devices
+(
+    project_id          text not null,
+    asset_id            integer not null,
+    device_id           text not null,
+    location_id         text not null,
+    primary key(project_id, device_id, location_id)
+);
+
+
+commit;
+
