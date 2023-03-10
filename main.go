@@ -36,7 +36,7 @@ func main() {
 
 	// Init the app before the first run.
 	app.Init(db.Pool(), app.AppName(),
-		asset.InitAssetTypeFile("eliona/asset-type-glutz_device"),
+		asset.InitAssetTypeFile("eliona/asset-type-glutz_device.json"),
 		app.ExecSqlFile("conf/init.sql"),
 		conf.InitConfiguration,
 		eliona.InitEliona,
