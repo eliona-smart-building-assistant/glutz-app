@@ -24,7 +24,7 @@ type ConfigurationApiService struct {
 
 // NewConfigurationApiService creates a default api service
 func NewConfigurationApiService() apiserver.ConfigurationApiServicer {
-	return &ConfigurationApiService{}
+	return &apiserver.ConfigurationApiService{}
 }
 
 // GetConfigurations - Get example configurations
