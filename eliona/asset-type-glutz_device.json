@@ -1,0 +1,95 @@
+{
+	"attributes": [
+        {
+			"enable": true,
+			"name": "battery_level",
+			"subtype": "input",
+			"translation": {
+				"de": "Batteriestand",
+				"en": "Battery level"
+			},
+            "unit": "%",
+			"type": "level"
+			
+		},
+        {
+			"enable": true,
+			"name": "openings",
+			"subtype": "input",
+			"translation": {
+				"de": "Öffnungen",
+				"en": "openings"
+			},
+			"type": "watchdog"
+		},
+		{
+			"enable": true,
+			"name": "building",
+			"subtype": "info",
+			"translation": {
+				"de": "Gebäude",
+				"en": "Building"
+			},
+			"type": "presence"
+		},
+        {
+			"enable": true,
+			"name": "room",
+			"subtype": "info",
+			"translation": {
+				"de": "Zimmer",
+				"en": "Room"
+			},
+			"type": "presence"
+		},
+        {
+			"enable": true,
+			"name": "access_point",
+			"subtype": "info",
+			"translation": {
+				"de": "Zugang",
+				"en": "Access Point"
+			},
+			"type": "presence"
+		},
+        {
+			"enable": true,
+			"name": "operating_mode",
+			"subtype": "info",
+			"translation": {
+				"de": "Operationsmodus",
+				"en": "Operating mode"
+			},
+			"type": "operating-status"
+		},
+        {
+			"enable": true,
+			"name": "firmware",
+			"subtype": "info",
+			"translation": {
+				"de": "Firmware",
+				"en": "Firmware"
+			},
+			"type": "device-info"
+		},
+        {
+			"enable": true,
+			"name": "openable_duration",
+			"subtype": "info",
+			"translation": {
+				"de": "Öffnungsbare Zeit",
+				"en": "Openable Duration"
+			},
+            "unit": "seconds",
+			"type": "operating-status"
+		}
+	],
+	"custom": true,
+	"name": "glutz_device",
+	"translation": {
+		"de": "Ein Glutz Gerät",
+		"en": "A glutz device"
+	},
+	"urldoc": "https://glutz.com/gb/en",
+	"vendor": "glutz"
+}

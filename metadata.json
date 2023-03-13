@@ -1,13 +1,13 @@
 {
- "name": "template",
+ "name": "glutz",
  "elionaMinVersion": "9.2.0",  
   "displayName": {
-    "en": "App template",
-    "de": "App Vorlage"
+    "en": "Glutz App",
+    "de": "Glutz App"
   },
   "description": {
-    "en": "This template can be used to create an app stub for an Eliona environment.",
-    "de": "Diese Vorlage kann verwendet werden um eine App für Eliona zu erstellen."
+    "en": "The Glutz App allows Glutz devices to communicate with Eliona.",
+    "de": "Die Glutz App erlaubt die Kommunikation zwischen Glutz Geräte und Eliona."
   },
   "documentationUrl": "https://doc.eliona.io/eliona/referenzen/app-entwicklung",
   "useEnvironment": [ "CONNECTION_STRING", "API_ENDPOINT", "API_TOKEN" ]
