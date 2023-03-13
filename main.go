@@ -21,8 +21,8 @@ import (
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 	"github.com/eliona-smart-building-assistant/go-utils/db"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
-	"template/conf"
-	"template/eliona"
+	"glutz/conf"
+	"glutz/eliona"
 	"time"
 )
 

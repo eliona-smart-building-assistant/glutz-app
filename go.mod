@@ -1,4 +1,4 @@
-module template
+module glutz
 
 go 1.18
 

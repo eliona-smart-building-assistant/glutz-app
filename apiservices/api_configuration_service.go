@@ -13,7 +13,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"template/apiserver"
+	"glutz/apiserver"
 )
 
 // ConfigurationApiService is a service that implements the logic for the ConfigurationApiServicer

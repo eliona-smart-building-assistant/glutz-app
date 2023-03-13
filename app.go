@@ -20,8 +20,8 @@ import (
 	"github.com/eliona-smart-building-assistant/go-utils/http"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 	nethttp "net/http"
-	"template/apiserver"
-	"template/apiservices"
+	"glutz/apiserver"
+	"glutz/apiservices"
 )
 
 // doAnything is the main app function which is called periodically

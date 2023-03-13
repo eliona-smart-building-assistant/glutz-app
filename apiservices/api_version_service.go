@@ -16,7 +16,7 @@ import (
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 	"net/http"
 	"os"
-	"template/apiserver"
+	"glutz/apiserver"
 )
 
 // VersionApiService is a service that implements the logic for the VersionApiServicer
