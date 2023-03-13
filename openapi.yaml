@@ -269,6 +269,11 @@ components:
           description: Token for API.
           readOnly: true
           nullable: false
+        url:
+          type: string
+          description: url for glutz endpoint
+          readOnly: true
+          nullable: false
         active:
           type: boolean
           readOnly: true

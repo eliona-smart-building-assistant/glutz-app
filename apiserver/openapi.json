@@ -370,6 +370,12 @@
             "readOnly" : true,
             "type" : "string"
           },
+          "url" : {
+            "description" : "url for glutz endpoint",
+            "nullable" : false,
+            "readOnly" : true,
+            "type" : "string"
+          },
           "active" : {
             "description" : "Set to `true` by the app when running and to `false` when app is stopped",
             "nullable" : false,

@@ -24,6 +24,9 @@ type Configuration struct {
 	// Token for API.
 	ApiToken string `json:"apiToken,omitempty"`
 
+	// url for glutz endpoint
+	Url string `json:"url,omitempty"`
+
 	// Set to `true` by the app when running and to `false` when app is stopped
 	Active bool `json:"active,omitempty"`
 
