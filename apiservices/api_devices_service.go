@@ -11,9 +11,9 @@ package apiservices
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"glutz/apiserver"
+	"glutz/conf"
 )
 
 // DevicesApiService is a service that implements the logic for the DevicesApiServicer
@@ -29,11 +29,9 @@ func NewDevicesApiService() apiserver.DevicesApiServicer {
 
 // GetDevices - List all devices mapped to eliona assets
 func (s *DevicesApiService) GetDevices(ctx context.Context, configId int64) (apiserver.ImplResponse, error) {
-	// TODO - update GetDevices with the required logic for this service method.
-	// Add api_devices_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	//TODO: Uncomment the next line to return response Response(200, []Device{}) or use other options such as http.Ok ...
-	//return Response(200, []Device{}), nil
-
-	return apiserver.Response(http.StatusNotImplemented, nil), errors.New("GetDevices method not implemented")
+	devices, err := conf.GetDevices(ctx, configId)
+	if err != nil {
+		return apiserver.ImplResponse{Code: http.StatusInternalServerError}, err
+	}
+	return apiserver.Response(http.StatusOK, devices), nil
 }
