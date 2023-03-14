@@ -25,8 +25,8 @@ import (
 type Device struct {
 	ConfigID   int64  `boil:"config_id" json:"config_id" toml:"config_id" yaml:"config_id"`
 	ProjectID  string `boil:"project_id" json:"project_id" toml:"project_id" yaml:"project_id"`
-	AssetID    int32  `boil:"asset_id" json:"asset_id" toml:"asset_id" yaml:"asset_id"`
 	DeviceID   string `boil:"device_id" json:"device_id" toml:"device_id" yaml:"device_id"`
+	AssetID    int32  `boil:"asset_id" json:"asset_id" toml:"asset_id" yaml:"asset_id"`
 	LocationID string `boil:"location_id" json:"location_id" toml:"location_id" yaml:"location_id"`
 
 	R *deviceR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -36,28 +36,28 @@ type Device struct {
 var DeviceColumns = struct {
 	ConfigID   string
 	ProjectID  string
-	AssetID    string
 	DeviceID   string
+	AssetID    string
 	LocationID string
 }{
 	ConfigID:   "config_id",
 	ProjectID:  "project_id",
-	AssetID:    "asset_id",
 	DeviceID:   "device_id",
+	AssetID:    "asset_id",
 	LocationID: "location_id",
 }
 
 var DeviceTableColumns = struct {
 	ConfigID   string
 	ProjectID  string
-	AssetID    string
 	DeviceID   string
+	AssetID    string
 	LocationID string
 }{
 	ConfigID:   "devices.config_id",
 	ProjectID:  "devices.project_id",
-	AssetID:    "devices.asset_id",
 	DeviceID:   "devices.device_id",
+	AssetID:    "devices.asset_id",
 	LocationID: "devices.location_id",
 }
 
@@ -89,14 +89,14 @@ func (w whereHelperint32) NIN(slice []int32) qm.QueryMod {
 var DeviceWhere = struct {
 	ConfigID   whereHelperint64
 	ProjectID  whereHelperstring
-	AssetID    whereHelperint32
 	DeviceID   whereHelperstring
+	AssetID    whereHelperint32
 	LocationID whereHelperstring
 }{
 	ConfigID:   whereHelperint64{field: "\"glutz\".\"devices\".\"config_id\""},
 	ProjectID:  whereHelperstring{field: "\"glutz\".\"devices\".\"project_id\""},
-	AssetID:    whereHelperint32{field: "\"glutz\".\"devices\".\"asset_id\""},
 	DeviceID:   whereHelperstring{field: "\"glutz\".\"devices\".\"device_id\""},
+	AssetID:    whereHelperint32{field: "\"glutz\".\"devices\".\"asset_id\""},
 	LocationID: whereHelperstring{field: "\"glutz\".\"devices\".\"location_id\""},
 }
 
@@ -117,10 +117,10 @@ func (*deviceR) NewStruct() *deviceR {
 type deviceL struct{}
 
 var (
-	deviceAllColumns            = []string{"config_id", "project_id", "asset_id", "device_id", "location_id"}
-	deviceColumnsWithoutDefault = []string{"config_id", "project_id", "asset_id", "device_id", "location_id"}
+	deviceAllColumns            = []string{"config_id", "project_id", "device_id", "asset_id", "location_id"}
+	deviceColumnsWithoutDefault = []string{"config_id", "project_id", "device_id", "asset_id", "location_id"}
 	deviceColumnsWithDefault    = []string{}
-	devicePrimaryKeyColumns     = []string{"project_id", "device_id"}
+	devicePrimaryKeyColumns     = []string{"config_id", "project_id", "device_id"}
 	deviceGeneratedColumns      = []string{}
 )
 
@@ -434,13 +434,13 @@ func Devices(mods ...qm.QueryMod) deviceQuery {
 }
 
 // FindDeviceG retrieves a single record by ID.
-func FindDeviceG(ctx context.Context, projectID string, deviceID string, selectCols ...string) (*Device, error) {
-	return FindDevice(ctx, boil.GetContextDB(), projectID, deviceID, selectCols...)
+func FindDeviceG(ctx context.Context, configID int64, projectID string, deviceID string, selectCols ...string) (*Device, error) {
+	return FindDevice(ctx, boil.GetContextDB(), configID, projectID, deviceID, selectCols...)
 }
 
 // FindDevice retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindDevice(ctx context.Context, exec boil.ContextExecutor, projectID string, deviceID string, selectCols ...string) (*Device, error) {
+func FindDevice(ctx context.Context, exec boil.ContextExecutor, configID int64, projectID string, deviceID string, selectCols ...string) (*Device, error) {
 	deviceObj := &Device{}
 
 	sel := "*"
@@ -448,10 +448,10 @@ func FindDevice(ctx context.Context, exec boil.ContextExecutor, projectID string
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"glutz\".\"devices\" where \"project_id\"=$1 AND \"device_id\"=$2", sel,
+		"select %s from \"glutz\".\"devices\" where \"config_id\"=$1 AND \"project_id\"=$2 AND \"device_id\"=$3", sel,
 	)
 
-	q := queries.Raw(query, projectID, deviceID)
+	q := queries.Raw(query, configID, projectID, deviceID)
 
 	err := q.Bind(ctx, exec, deviceObj)
 	if err != nil {
@@ -835,7 +835,7 @@ func (o *Device) Delete(ctx context.Context, exec boil.ContextExecutor) (int64, 
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), devicePrimaryKeyMapping)
-	sql := "DELETE FROM \"glutz\".\"devices\" WHERE \"project_id\"=$1 AND \"device_id\"=$2"
+	sql := "DELETE FROM \"glutz\".\"devices\" WHERE \"config_id\"=$1 AND \"project_id\"=$2 AND \"device_id\"=$3"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -950,7 +950,7 @@ func (o *Device) ReloadG(ctx context.Context) error {
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *Device) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindDevice(ctx, exec, o.ProjectID, o.DeviceID)
+	ret, err := FindDevice(ctx, exec, o.ConfigID, o.ProjectID, o.DeviceID)
 	if err != nil {
 		return err
 	}
@@ -999,21 +999,21 @@ func (o *DeviceSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor) 
 }
 
 // DeviceExistsG checks if the Device row exists.
-func DeviceExistsG(ctx context.Context, projectID string, deviceID string) (bool, error) {
-	return DeviceExists(ctx, boil.GetContextDB(), projectID, deviceID)
+func DeviceExistsG(ctx context.Context, configID int64, projectID string, deviceID string) (bool, error) {
+	return DeviceExists(ctx, boil.GetContextDB(), configID, projectID, deviceID)
 }
 
 // DeviceExists checks if the Device row exists.
-func DeviceExists(ctx context.Context, exec boil.ContextExecutor, projectID string, deviceID string) (bool, error) {
+func DeviceExists(ctx context.Context, exec boil.ContextExecutor, configID int64, projectID string, deviceID string) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"glutz\".\"devices\" where \"project_id\"=$1 AND \"device_id\"=$2 limit 1)"
+	sql := "select exists(select 1 from \"glutz\".\"devices\" where \"config_id\"=$1 AND \"project_id\"=$2 AND \"device_id\"=$3 limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, projectID, deviceID)
+		fmt.Fprintln(writer, configID, projectID, deviceID)
 	}
-	row := exec.QueryRowContext(ctx, sql, projectID, deviceID)
+	row := exec.QueryRowContext(ctx, sql, configID, projectID, deviceID)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1025,5 +1025,5 @@ func DeviceExists(ctx context.Context, exec boil.ContextExecutor, projectID stri
 
 // Exists checks if the Device row exists.
 func (o *Device) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return DeviceExists(ctx, exec, o.ProjectID, o.DeviceID)
+	return DeviceExists(ctx, exec, o.ConfigID, o.ProjectID, o.DeviceID)
 }
