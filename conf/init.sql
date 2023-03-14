@@ -33,10 +33,10 @@ create table if not exists glutz.devices
 (
     config_id           bigint not null,
     project_id          text not null,
-    asset_id            integer not null,
     device_id           text not null,
+    asset_id            integer not null,
     location_id         text not null,
-    primary key(project_id, device_id)
+    primary key(config_id, project_id, device_id)
 );
 
 
