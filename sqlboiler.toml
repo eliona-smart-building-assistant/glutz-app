@@ -1,5 +1,5 @@
-output   = "db/template"
-pkgname  = "dbtemplate"
+output   = "db/glutz"
+pkgname  = "dbglutz"
 add-global-variants = true
 wipe     = true
 no-tests = true
@@ -11,10 +11,11 @@ host   = "localhost"
 port   = 5432
 user   = "postgres"
 pass   = "secret"
-schema = "template"
+schema = "glutz"
 sslmode = "disable"
 whitelist = [
-    "example_table"
+    "config",
+    "devices"
 ]
 
 [[types]]
