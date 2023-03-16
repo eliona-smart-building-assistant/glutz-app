@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/eliona-smart-building-assistant/go-eliona v1.9.3
-	github.com/eliona-smart-building-assistant/go-utils v1.0.14
+	github.com/eliona-smart-building-assistant/go-utils v1.0.17
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gorilla/mux v1.8.0
 	github.com/volatiletech/null/v8 v8.1.2

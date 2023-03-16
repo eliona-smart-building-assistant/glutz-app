@@ -16,19 +16,54 @@
 package main
 
 import (
+	"context"
+	"glutz/apiserver"
+	"glutz/apiservices"
+	"glutz/conf"
+	"glutz/glutz"
+	nethttp "net/http"
+
+	"time"
+
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 	"github.com/eliona-smart-building-assistant/go-utils/http"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
-	nethttp "net/http"
-	"glutz/apiserver"
-	"glutz/apiservices"
 )
 
-// doAnything is the main app function which is called periodically
-func doAnything() {
+type deviceRequest struct {
+	jsonrpc string
+	id      string
+	method  string
+	params  []string
+}
 
-	// Todo: implement everything the app should do
-	log.Debug("main", "do anything")
+// doAnything is the main app function which is called periodically
+func processDevices(configId int64) {
+	config, err := conf.GetConfig(context.Background(), configId)
+	if err != nil {
+		log.Error("devices", "Error reading configuration: %v", err)
+	}
+	var body deviceRequest
+	strArr := [1]string{"Devices"}
+	body.id = "m"
+	body.jsonrpc = "2.0"
+	body.method = "eAccess.getModel"
+	body.params = strArr[:]
+	log.Debug("devices", "Request Body: %v", body)
+	request, err := http.NewPostRequest(config.Url, body)
+	if err != nil {
+		log.Error("devices", "Error with request: %v", err)
+	}
+	deviceList, err := http.Read[glutz.DeviceGlutz](request, time.Duration(time.Duration.Seconds(1)), true)
+	if err != nil {
+		log.Error("devices", "Error reading spaces: %v", err)
+	}
+
+	log.Debug("Devices", "Here are the devices: %v", deviceList)
+
+	// for device:= range devices {
+	// 	log.Debug("devices", "Device: %v", device)
+	// }
 
 }
 
