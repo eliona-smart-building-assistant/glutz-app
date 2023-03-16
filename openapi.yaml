@@ -42,7 +42,7 @@ paths:
       description: Gets information about all configurations.
       operationId: getConfigurations
       responses:
-        200:
+        "200":
           description: Successfully returned all endpoint configurations
           content:
             application/json:
@@ -62,7 +62,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Configuration'
       responses:
-        201:
+        "201":
           description: Successfully created a new endpoint configuration
           content:
             application/json:
@@ -79,7 +79,7 @@ paths:
         - $ref: '#/components/parameters/config-id'
       operationId: getConfigurationById
       responses:
-        200:
+        "200":
           description: Successfully returned configured endpoint
           content:
             application/json:
@@ -99,7 +99,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Configuration'
       responses:
-        200:
+        "200":
           description: Successfully updates an endpoint
           content:
             application/json:
@@ -114,7 +114,7 @@ paths:
         - $ref: '#/components/parameters/config-id'
       operationId: deleteConfigurationById
       responses:
-        204:
+        "204":
           description: Successfully deletes endpoint
   
   
@@ -134,7 +134,7 @@ paths:
             type: integer
             format: int64
       responses:
-        200:
+        "200":
           description: Successfully returned asset-device mappings
           content:
             application/json:
@@ -151,7 +151,7 @@ paths:
       description: Delivers all names for which the app provides dashboard templates.
       operationId: getDashboardTemplateNames
       responses:
-        200:
+        "200":
           description: Successfully returned list of template names
           content:
             application/json:
@@ -188,13 +188,13 @@ paths:
             type: string
             example: 99
       responses:
-        200:
+        "200":
           description: Successfully returned dashboard template
           content:
             application/json:
               schema:
                 $ref: 'https://raw.githubusercontent.com/eliona-smart-building-assistant/eliona-api/main/openapi.yaml#/components/schemas/Dashboard'
-        404:
+        "404":
           description: Template with name not found
   /version:
     get:
@@ -204,7 +204,7 @@ paths:
       tags:
         - Version
       responses:
-        200:
+        "200":
           description: Successfully returned the APIs version.
           content:
             application/json:
@@ -220,7 +220,7 @@ paths:
       tags:
         - Version
       responses:
-        200:
+        "200":
           description: Successfully returned the openapi.json file.
           content:
             application/json:

@@ -31,9 +31,9 @@ FROM alpine:3.15 AS target
 
 COPY --from=build /app ./
 COPY conf/*.sql ./conf/
-COPY apiserver/openapi.json /
+COPY openapi.yaml /
 
-ENV APPNAME=template
+ENV APPNAME=glutz
 
 ENV TZ=Europe/Zurich
 CMD [ "/app" ]
