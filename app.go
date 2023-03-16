@@ -22,33 +22,32 @@ import (
 	"glutz/conf"
 	"glutz/glutz"
 	nethttp "net/http"
-
 	"time"
-
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 	"github.com/eliona-smart-building-assistant/go-utils/http"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 )
 
 type deviceRequest struct {
-	jsonrpc string
-	id      string
-	method  string
-	params  []string
+	Jsonrpc string   `json:"jsonrpc"`
+	ID      string   `json:"id"`
+	Method  string   `json:"method"`
+	Params  []string `json:"params"`
 }
 
 // doAnything is the main app function which is called periodically
 func processDevices(configId int64) {
+
 	config, err := conf.GetConfig(context.Background(), configId)
 	if err != nil {
 		log.Error("devices", "Error reading configuration: %v", err)
 	}
 	var body deviceRequest
 	strArr := [1]string{"Devices"}
-	body.id = "m"
-	body.jsonrpc = "2.0"
-	body.method = "eAccess.getModel"
-	body.params = strArr[:]
+	body.ID = "m"
+	body.Jsonrpc = "2.0"
+	body.Method = "eAccess.getModel"
+	body.Params = strArr[:]
 	log.Debug("devices", "Request Body: %v", body)
 	request, err := http.NewPostRequest(config.Url, body)
 	if err != nil {
@@ -58,13 +57,10 @@ func processDevices(configId int64) {
 	if err != nil {
 		log.Error("devices", "Error reading spaces: %v", err)
 	}
-
-	log.Debug("Devices", "Here are the devices: %v", deviceList)
-
-	// for device:= range devices {
-	// 	log.Debug("devices", "Device: %v", device)
-	// }
-
+	for result:=range deviceList.Result {
+		log.Debug("Devices", "Here are the devices: %v", deviceList.Result[result])
+		log.Debug("Devices", "Here are the device AccessPointIds: %v", deviceList.Result[result].AccessPointId)
+	}
 }
 
 // listenApi starts the API server and listen for requests
