@@ -1,3 +1,4 @@
+
 go install golang.org/x/tools/cmd/goimports@latest
 
 docker run --rm ^
@@ -9,13 +10,5 @@ docker run --rm ^
     -i /local/openapi.yaml ^
     -o /local/apiserver ^
     --additional-properties="packageName=apiserver,sourceFolder=,outputAsLibrary=true"
-
-docker run --rm ^
-    -v "%cd%":/local ^
-    openapitools/openapi-generator-cli:v6.2.1 generate ^
-    -g openapi ^
-    -i /local/openapi.yaml ^
-    -o /local/apiserver ^
-    --additional-properties=outputFile=openapi.json
 
 goimports -w ./apiserver

@@ -11,12 +11,12 @@ package apiservices
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 	"net/http"
 	"os"
 	"glutz/apiserver"
+	"gopkg.in/yaml.v3"
 )
 
 // VersionApiService is a service that implements the logic for the VersionApiServicer
@@ -34,14 +34,14 @@ func NewVersionApiService() apiserver.VersionApiServicer {
 func (s *VersionApiService) GetOpenAPI(ctx context.Context) (apiserver.ImplResponse, error) {
 	bytes, err := os.ReadFile("openapi.json")
 	if err != nil {
-		bytes, err = os.ReadFile("apiserver/openapi.json")
+		bytes, err = os.ReadFile("openapi.yaml")
 		if err != nil {
 			log.Error("services", "%s: %v", "GetOpenAPI", err)
 			return apiserver.ImplResponse{Code: http.StatusNotFound}, err
 		}
 	}
 	var body interface{}
-	err = json.Unmarshal(bytes, &body)
+	err = yaml.Unmarshal(bytes, &body)
 	if err != nil {
 		log.Error("services", "%s: %v", "GetOpenAPI", err)
 		return apiserver.ImplResponse{Code: http.StatusInternalServerError}, err
