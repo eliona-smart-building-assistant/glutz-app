@@ -5,11 +5,11 @@ package glutz
 type DevicesDb map[string]DeviceDb
 
 type DeviceDb struct {
-	BatteryLevel     float64 `json:"batteryLevel"`
+	BatteryLevel     int64 `json:"batteryLevel"`
 	Openings         int64   `json:"openings"`
 	Building         string  `json:"building"`
 	Room             string  `json:"room"`
-	AccessPoint      int64   `json:"accessPoint"`
+	AccessPoint      string   `json:"accessPoint"`
 	OperatingMode    int64   `json:"operatingMode"`
 	Firmware         string  `json:"firmware"`
 	OpenableDuration string  `json:"openableDuration"` // Check this!
@@ -50,4 +50,16 @@ type DeviceStatus struct{
 	Openings	int64 `json:"openings"`
 	OperatingMode	int64 `json:"operatingMode"`
 	RfWakeups	int64 `json:"rfWakeups"`
+}
+
+type DeviceAccessPointGlutz struct{
+	Id 			string `json:"id"`
+	Jsonrpc		string `json:"jsonrpc"`
+	Result 		[]DeviceAccessPoint `json:"result"`
+}
+
+type DeviceAccessPoint struct {
+	Building       string  `json:"building"`
+	Room           string  `json:"room"`
+	AccessPoint    string  `json:"accessPoint"`
 }
