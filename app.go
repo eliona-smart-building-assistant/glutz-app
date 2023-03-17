@@ -45,44 +45,54 @@ type DeviceParams struct {
 
 // doAnything is the main app function which is called periodically
 func processDevices(configId int64) {
-	//// Fetch Devices ////
 	config, err := conf.GetConfig(context.Background(), configId)
 	if err != nil {
 		log.Error("devices", "Error reading configuration: %v", err)
 	}
-	//Get Array of type DeviceDb with all devices found 
+	Devices, err := FetchDevicesIntoDeviceList(config)
+	if err!= nil {
+		return
+	}
+	log.Debug("Devices", "List of devices: %v", Devices)
+	//TODO: Check for Mapping and Create Mapping
+
+	//TODO: Send Data to Eliona
+
+}
+
+func FetchDevicesIntoDeviceList(config *apiserver.Configuration) ([]glutz.DeviceDb,error) {
 	var Devices []glutz.DeviceDb
 
 	deviceList, err := GetDevices(config)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	for result := range deviceList.Result {
-		deviceid:= deviceList.Result[result].Deviceid
+		deviceid := deviceList.Result[result].Deviceid
 		deviceStatus, err := GetDeviceStatus(config, deviceid)
 		if err != nil {
-			return
+			return nil, err
 		}
-		accesspointid:=deviceList.Result[result].AccessPointId
+		accesspointid := deviceList.Result[result].AccessPointId
 		accessPointId, err := GetLocation(config, accesspointid)
 		if err != nil {
-			return
+			return nil, err
 		}
 		Device := glutz.DeviceDb{
-			BatteryLevel: deviceStatus.Result[0].BatteryLevel,
-			Openings: deviceStatus.Result[0].Openings,
-			Building: accessPointId.Result[0],
-			Room: accessPointId.Result[1],
-			AccessPoint: accessPointId.Result[2], 
-			OperatingMode: deviceStatus.Result[0].OperatingMode,
-			Firmware: deviceStatus.Result[0].Firmware,
-			OpenableDuration: "", //Change later
+			BatteryLevel:     deviceStatus.Result[0].BatteryLevel,
+			Openings:         deviceStatus.Result[0].Openings,
+			Building:         accessPointId.Result[0],
+			Room:             accessPointId.Result[1],
+			AccessPoint:      accessPointId.Result[2],
+			OperatingMode:    deviceStatus.Result[0].OperatingMode,
+			Firmware:         deviceStatus.Result[0].Firmware,
+			OpenableDuration: "",
 		}
 		Devices = append(Devices, Device)
 	}
 	log.Debug("Devices", "Devices: %v", Devices)
-
+	return Devices, nil
 }
 
 
