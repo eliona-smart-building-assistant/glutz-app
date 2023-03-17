@@ -50,11 +50,6 @@ func processDevices(configId int64) {
 	if err != nil {
 		log.Error("devices", "Error reading configuration: %v", err)
 	}
-	// accesspointId, err := GetLocation(config, "996")
-	// if err != nil {
-	// 	return
-	// }
-	// log.Debug("devices","Accesspoint: %v", accesspointId)
 	//Get Array of type DeviceDb with all devices found 
 	var Devices []glutz.DeviceDb
 
@@ -69,17 +64,17 @@ func processDevices(configId int64) {
 		if err != nil {
 			return
 		}
-		// accesspointid:=deviceList.Result[result].AccessPointId
-		// accessPointId, err := GetLocation(config, accesspointid)
-		// if err != nil {
-		// 	return
-		// }
+		accesspointid:=deviceList.Result[result].AccessPointId
+		accessPointId, err := GetLocation(config, accesspointid)
+		if err != nil {
+			return
+		}
 		Device := glutz.DeviceDb{
 			BatteryLevel: deviceStatus.Result[0].BatteryLevel,
 			Openings: deviceStatus.Result[0].Openings,
-			Building: "examplebuilding",//accessPointId.Result[0].Building,
-			Room: "exampleroom",//accessPointId.Result[0].Room,
-			AccessPoint: "exampleaccesspoint", //accessPointId.Result[0].AccessPoint,
+			Building: accessPointId.Result[0],
+			Room: accessPointId.Result[1],
+			AccessPoint: accessPointId.Result[2], 
 			OperatingMode: deviceStatus.Result[0].OperatingMode,
 			Firmware: deviceStatus.Result[0].Firmware,
 			OpenableDuration: "", //Change later

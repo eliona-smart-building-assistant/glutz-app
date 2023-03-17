@@ -55,11 +55,6 @@ type DeviceStatus struct{
 type DeviceAccessPointGlutz struct{
 	Id 			string `json:"id"`
 	Jsonrpc		string `json:"jsonrpc"`
-	Result 		[]DeviceAccessPoint `json:"result"`
+	Result 		[]string `json:"result"`
 }
 
-type DeviceAccessPoint struct {
-	Building       string  `json:"building"`
-	Room           string  `json:"room"`
-	AccessPoint    string  `json:"accessPoint"`
-}
