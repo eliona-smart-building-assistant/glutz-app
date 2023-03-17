@@ -29,3 +29,25 @@ type DeviceResult struct {
 	Id 				string  `json:"id"`
 	Label 			string `json:"label"`
 }
+
+type DeviceStatusGlutz struct{
+	Id 			string `json:"id"`
+	Jsonrpc		string `json:"jsonrpc"`
+	Result 		[]DeviceStatus `json:"result"`
+}
+
+type DeviceStatus struct{
+	BatteryAlarm	bool `json:"batteryAlarm"`
+	BatteryLevel	int64 `json:"batteryLevel"`
+	BatteryPowered	bool `json:"batteryPowered"`
+	CommunicationErrors	int64 `json:"communicationErrors"`
+	DeviceType	int64 `json:"deviceType"`
+	DeviceId	string `json:"deviceid"`
+	Firmware	string `json:"firmware"`
+	IrWakeups	int64 `json:"irWakeups"`
+	LastError	int64  `json:"lastError"`
+	LastUpdate	string `json:"lastUpdate"`
+	Openings	int64 `json:"openings"`
+	OperatingMode	int64 `json:"operatingMode"`
+	RfWakeups	int64 `json:"rfWakeups"`
+}
