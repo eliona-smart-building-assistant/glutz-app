@@ -120,6 +120,13 @@ func InsertSpace(ctx context.Context, configId int64, projectId string, deviceId
 	return dbDevice.Insert(ctx, db.Database("glutz"), boil.Infer())
 }
 
+func SetConfigActiveState(configID int64, state bool) (int64, error) {
+	return dbglutz.Configs(
+		dbglutz.ConfigWhere.ConfigID.EQ(null.Int64FromPtr(&configID).Int64),
+	).UpdateAll(context.Background(), db.Database("glutz"), dbglutz.M{
+		dbglutz.ConfigColumns.Active: state,
+	})
+}
 
 
 

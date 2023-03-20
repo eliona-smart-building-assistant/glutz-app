@@ -54,6 +54,8 @@ func main() {
 		functions = append(functions, common.LoopWithParam(processDevices, config.ConfigId, time.Duration(config.RefreshInterval)*time.Second))	
 	}
 	common.WaitFor(functions...)
-
+	for _, config:= range configs {
+		conf.SetConfigActiveState(config.ConfigId, false)
+	}
 	log.Info("main", "Terminate the app.")
 }

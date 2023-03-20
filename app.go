@@ -51,8 +51,9 @@ func processDevices(configId int64) {
 	config, err := conf.GetConfig(context.Background(), configId)
 	if err != nil {
 		log.Error("devices", "Error reading configuration: %v", err)
+		return
 	}
-	Devices, devicelist, err := FetchDevicesIntoDeviceList(config)
+	Devices, devicelist, err := fetchDevicesAndSetActiveState(config)
 	if err!= nil {
 		return
 	}
@@ -72,14 +73,17 @@ func processDevices(configId int64) {
 
 
 
-func FetchDevicesIntoDeviceList(config *apiserver.Configuration) ([]glutz.DeviceDb,*glutz.DeviceGlutz, error) {
+func fetchDevicesAndSetActiveState(config *apiserver.Configuration) ([]glutz.DeviceDb,*glutz.DeviceGlutz, error) {
+	if config.Enable == nil || !*config.Enable {
+		_, err :=conf.SetConfigActiveState(config.ConfigId, false)
+		return nil, nil, err
+	}
+	conf.SetConfigActiveState(config.ConfigId, true)
 	var Devices []glutz.DeviceDb
-
 	deviceList, err := GetDevices(config)
 	if err != nil {
 		return nil, nil, err
 	}
-
 	for result := range deviceList.Result {
 		deviceid := deviceList.Result[result].Deviceid
 		deviceStatus, err := GetDeviceStatus(config, deviceid)
