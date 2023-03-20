@@ -46,7 +46,6 @@ func main() {
 	var functions []func()
 	functions = append(functions, listenApi)
 	configs, err := conf.GetConfigs(context.Background())
-	log.Info("main", "Here")
 	if err != nil {
 		log.Error("Configurations", "Error retrieving configurations")
 	}
