@@ -5,11 +5,11 @@ package glutz
 type DevicesDb map[string]DeviceDb
 
 type DeviceDb struct {
-	BatteryLevel     float64 `json:"batteryLevel"`
+	BatteryLevel     int64 `json:"batteryLevel"`
 	Openings         int64   `json:"openings"`
 	Building         string  `json:"building"`
 	Room             string  `json:"room"`
-	AccessPoint      int64   `json:"accessPoint"`
+	AccessPoint      string   `json:"accessPoint"`
 	OperatingMode    int64   `json:"operatingMode"`
 	Firmware         string  `json:"firmware"`
 	OpenableDuration string  `json:"openableDuration"` // Check this!
@@ -29,3 +29,32 @@ type DeviceResult struct {
 	Id 				string  `json:"id"`
 	Label 			string `json:"label"`
 }
+
+type DeviceStatusGlutz struct{
+	Id 			string `json:"id"`
+	Jsonrpc		string `json:"jsonrpc"`
+	Result 		[]DeviceStatus `json:"result"`
+}
+
+type DeviceStatus struct{
+	BatteryAlarm	bool `json:"batteryAlarm"`
+	BatteryLevel	int64 `json:"batteryLevel"`
+	BatteryPowered	bool `json:"batteryPowered"`
+	CommunicationErrors	int64 `json:"communicationErrors"`
+	DeviceType	int64 `json:"deviceType"`
+	DeviceId	string `json:"deviceid"`
+	Firmware	string `json:"firmware"`
+	IrWakeups	int64 `json:"irWakeups"`
+	LastError	int64  `json:"lastError"`
+	LastUpdate	string `json:"lastUpdate"`
+	Openings	int64 `json:"openings"`
+	OperatingMode	int64 `json:"operatingMode"`
+	RfWakeups	int64 `json:"rfWakeups"`
+}
+
+type DeviceAccessPointGlutz struct{
+	Id 			string `json:"id"`
+	Jsonrpc		string `json:"jsonrpc"`
+	Result 		[]string `json:"result"`
+}
+

@@ -28,40 +28,142 @@ import (
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 )
 
-type deviceRequest struct {
-	Jsonrpc string   `json:"jsonrpc"`
-	ID      string   `json:"id"`
-	Method  string   `json:"method"`
-	Params  []string `json:"params"`
+
+
+type Request struct {
+    Jsonrpc string        `json:"jsonrpc"`
+    ID      string        `json:"id"`
+    Method  string        `json:"method"`
+    Params  []interface{} `json:"params"`
 }
+
+type DeviceParams struct {
+    DeviceID string `json:"deviceid"`
+}
+
+
 
 // doAnything is the main app function which is called periodically
 func processDevices(configId int64) {
-
 	config, err := conf.GetConfig(context.Background(), configId)
 	if err != nil {
 		log.Error("devices", "Error reading configuration: %v", err)
 	}
-	var body deviceRequest
-	strArr := [1]string{"Devices"}
-	body.ID = "m"
-	body.Jsonrpc = "2.0"
-	body.Method = "eAccess.getModel"
-	body.Params = strArr[:]
-	log.Debug("devices", "Request Body: %v", body)
-	request, err := http.NewPostRequest(config.Url, body)
+	Devices, err := FetchDevicesIntoDeviceList(config)
+	if err!= nil {
+		return
+	}
+	log.Debug("Devices", "List of devices: %v", Devices)
+	//TODO: Check for Mapping and Create Mapping
+
+	//TODO: Send Data to Eliona
+
+}
+
+func FetchDevicesIntoDeviceList(config *apiserver.Configuration) ([]glutz.DeviceDb,error) {
+	var Devices []glutz.DeviceDb
+
+	deviceList, err := GetDevices(config)
+	if err != nil {
+		return nil, err
+	}
+
+	for result := range deviceList.Result {
+		deviceid := deviceList.Result[result].Deviceid
+		deviceStatus, err := GetDeviceStatus(config, deviceid)
+		if err != nil {
+			return nil, err
+		}
+		accesspointid := deviceList.Result[result].AccessPointId
+		accessPointId, err := GetLocation(config, accesspointid)
+		if err != nil {
+			return nil, err
+		}
+		Device := glutz.DeviceDb{
+			BatteryLevel:     deviceStatus.Result[0].BatteryLevel,
+			Openings:         deviceStatus.Result[0].Openings,
+			Building:         accessPointId.Result[0],
+			Room:             accessPointId.Result[1],
+			AccessPoint:      accessPointId.Result[2],
+			OperatingMode:    deviceStatus.Result[0].OperatingMode,
+			Firmware:         deviceStatus.Result[0].Firmware,
+			OpenableDuration: "",
+		}
+		Devices = append(Devices, Device)
+	}
+	log.Debug("Devices", "Devices: %v", Devices)
+	return Devices, nil
+}
+
+
+func GetDevices(config *apiserver.Configuration)(*glutz.DeviceGlutz, error){
+	deviceRequest := Request{
+		Jsonrpc: "2.0",
+		ID: "m",
+		Method: "eAccess.getModel",
+		Params:[]interface{}{
+			"Devices",
+		},
+	}
+	devicerequest, err := http.NewPostRequest(config.Url, deviceRequest)
 	if err != nil {
 		log.Error("devices", "Error with request: %v", err)
+		return nil, err
 	}
-	deviceList, err := http.Read[glutz.DeviceGlutz](request, time.Duration(time.Duration.Seconds(1)), true)
+	deviceList, err := http.Read[glutz.DeviceGlutz](devicerequest, time.Duration(time.Duration.Seconds(1)), true)
 	if err != nil {
-		log.Error("devices", "Error reading spaces: %v", err)
+		log.Error("devices", "Error reading devices: %v", err)
+		return nil, err
 	}
-	for result:=range deviceList.Result {
-		log.Debug("Devices", "Here are the devices: %v", deviceList.Result[result])
-		log.Debug("Devices", "Here are the device AccessPointIds: %v", deviceList.Result[result].AccessPointId)
-	}
+	return &deviceList, nil
 }
+
+func GetDeviceStatus(config *apiserver.Configuration, device_id string)(*glutz.DeviceStatusGlutz, error) {
+	req := Request{
+		Jsonrpc: "2.0",
+		ID:      "m",
+		Method:  "eAccess.getModel",
+		Params: []interface{}{
+			"DeviceStatus",
+			DeviceParams{DeviceID: device_id},
+		},
+	}
+	devicestatusrequest, err := http.NewPostRequest(config.Url, req)
+	if err != nil {
+		log.Error("devices", "Error with request: %v", err)
+		return nil, err
+	}
+	deviceStatus, err := http.Read[glutz.DeviceStatusGlutz](devicestatusrequest, time.Duration(time.Duration.Seconds(1)), true)
+	if err != nil {
+		log.Error("devices", "Error reading device status: %v", err)
+		return nil, err
+	}
+	return &deviceStatus, nil
+}
+
+func GetLocation(config *apiserver.Configuration, accessPointId string)(*glutz.DeviceAccessPointGlutz,error){
+	req := Request{
+		Jsonrpc: "2.0",
+		ID:      "m",
+		Method:  "eAccess.getAccessPointProperty",
+		Params: []interface{}{
+			"location",
+			accessPointId,
+		},
+	}
+	deviceaccesspointrequest, err := http.NewPostRequest(config.Url, req)
+	if err != nil {
+		log.Error("devices", "Error with request: %v", err)
+		return nil, err
+	}
+	deviceAccessPoint, err := http.Read[glutz.DeviceAccessPointGlutz](deviceaccesspointrequest, time.Duration(time.Duration.Seconds(1)), true)
+	if err != nil {
+		log.Error("devices", "Error reading device access point: %v", err)
+		return nil, err
+	}
+	return &deviceAccessPoint, nil
+}
+
 
 // listenApi starts the API server and listen for requests
 func listenApi() {
