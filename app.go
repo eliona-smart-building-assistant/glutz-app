@@ -57,39 +57,20 @@ func processDevices(configId int64) {
 		return
 	}
 	log.Debug("Devices", "List of devices: %v", Devices)
-	//TODO: Check for Mapping and Create Mapping
 	if config.ProjIds != nil {
 		for _, projId := range *config.ProjIds {
 			for device := range devicelist.Result {
-				confDevice, err := conf.GetDevice(context.Background(), configId, projId, devicelist.Result[device].Deviceid)
+				_, err := getOrCreateMapping(config, projId, devicelist, device, Devices)
 				if err != nil {
-					log.Error("spaces", "Error when reading devices from configurations")	
-				}
-				assetname := Devices[device].AccessPoint + ", " + Devices[device].Room + ", " + Devices[device].Building
-				locationid := devicelist.Result[device].AccessPointId
-				if confDevice == nil {
-					confDevice, err = createAssetandMapping(config, projId, devicelist.Result[device].Deviceid, assetname, locationid)
-					if err != nil {
-						log.Debug("devices", "Error creating asset and mapping")
-					}
-				} else {
-					exists, err := asset.ExistAsset(confDevice.AssetId)
-					if err != nil {
-						log.Error("devices", "Error when checking if asset already exists")
-					}
-					if exists {
-						log.Debug("devices", "Asset already exists for device %v with AssetId %v", assetname, confDevice.AssetId)
-					} else {
-						log.Debug("devices", "Asset with AssetId %v does no longer exist in eliona", confDevice.AssetId)
-					}
+					return
 				}
 			}
 		}
 	}
-
 	//TODO: Send Data to Eliona
-
 }
+
+
 
 func FetchDevicesIntoDeviceList(config *apiserver.Configuration) ([]glutz.DeviceDb,*glutz.DeviceGlutz, error) {
 	var Devices []glutz.DeviceDb
@@ -126,9 +107,34 @@ func FetchDevicesIntoDeviceList(config *apiserver.Configuration) ([]glutz.Device
 	return Devices, deviceList, nil
 }
 
-// func getOrCreateMapping(config *apiserver.Configuration, projId string, device glutz.DeviceDb) (*apiserver.Device, error){
-
-// }
+func getOrCreateMapping( config *apiserver.Configuration, projId string, devicelist *glutz.DeviceGlutz, device int, Devices []glutz.DeviceDb) (*apiserver.Device, error) {
+	confDevice, err := conf.GetDevice(context.Background(), config.ConfigId, projId, devicelist.Result[device].Deviceid)
+	if err != nil {
+		log.Error("spaces", "Error when reading devices from configurations")
+	}
+	assetname := Devices[device].AccessPoint + ", " + Devices[device].Room + ", " + Devices[device].Building
+	locationid := devicelist.Result[device].AccessPointId
+	if confDevice == nil {
+		confDevice, err = createAssetandMapping(config, projId, devicelist.Result[device].Deviceid, assetname, locationid)
+		if err != nil {
+			log.Debug("devices", "Error creating asset and mapping")
+			return nil, err
+		}
+	} else {
+		exists, err := asset.ExistAsset(confDevice.AssetId)
+		if err != nil {
+			log.Error("devices", "Error when checking if asset already exists")
+			return nil, err
+		}
+		if exists {
+			log.Debug("devices", "Asset already exists for device %v with AssetId %v", assetname, confDevice.AssetId)
+		} else {
+			log.Debug("devices", "Asset with AssetId %v does no longer exist in eliona", confDevice.AssetId)
+			return nil, nil
+		}
+	}
+	return confDevice, nil
+}
 
 func createAssetandMapping(config *apiserver.Configuration, projId string, deviceid string, assetname string, locationId string)(*apiserver.Device, error){
 	assetId, err := eliona.CreateNewAsset(projId, deviceid, assetname)
