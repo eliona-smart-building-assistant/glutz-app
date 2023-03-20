@@ -50,14 +50,14 @@ func GetDevice(ctx context.Context, configId int64, projectId string, deviceId s
 		mods = append(mods, dbglutz.DeviceWhere.ProjectID.EQ(projectId))
 		mods = append(mods, dbglutz.DeviceWhere.DeviceID.EQ(deviceId))
 	}
-	dbSpaces, err := dbglutz.Devices(mods...).All(ctx, db.Database("glutz")) 
+	dbDevices, err := dbglutz.Devices(mods...).All(ctx, db.Database("glutz")) 
 	if err != nil {
 		return nil, err
 	}
-	if len(dbSpaces)!= 1 {
+	if len(dbDevices)!= 1 {
 		return nil, nil
 	}
-	return apiDevicesFromDbDevices(dbSpaces[0]), nil
+	return apiDevicesFromDbDevices(dbDevices[0]), nil
 }
 
 
@@ -108,6 +108,16 @@ func UpsertConfigById(ctx context.Context, configId int64, config apiserver.Conf
 	)
 	config.ConfigId = dbConfig.ConfigID
 	return config, err
+}
+
+func InsertSpace(ctx context.Context, configId int64, projectId string, deviceId string, assetId int32, locationId string) error {
+	var dbDevice dbglutz.Device
+	dbDevice.ConfigID = configId
+	dbDevice.ProjectID = projectId
+	dbDevice.DeviceID = deviceId
+	dbDevice.AssetID = assetId
+	dbDevice.LocationID = locationId
+	return dbDevice.Insert(ctx, db.Database("glutz"), boil.Infer())
 }
 
 
