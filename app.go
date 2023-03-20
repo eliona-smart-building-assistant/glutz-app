@@ -57,7 +57,6 @@ func processDevices(configId int64) {
 	if err!= nil {
 		return
 	}
-	log.Debug("Devices", "List of devices: %v", Devices)
 	if config.ProjIds != nil {
 		for _, projId := range *config.ProjIds {
 			for device := range devicelist.Result {
@@ -107,7 +106,6 @@ func fetchDevicesAndSetActiveState(config *apiserver.Configuration) ([]glutz.Dev
 		}
 		Devices = append(Devices, Device)
 	}
-	log.Debug("Devices", "Devices: %v", Devices)
 	return Devices, deviceList, nil
 }
 
