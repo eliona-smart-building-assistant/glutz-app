@@ -20,9 +20,12 @@ import (
 	"glutz/apiserver"
 	"glutz/apiservices"
 	"glutz/conf"
+	"glutz/eliona"
 	"glutz/glutz"
 	nethttp "net/http"
 	"time"
+
+	"github.com/eliona-smart-building-assistant/go-eliona/asset"
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 	"github.com/eliona-smart-building-assistant/go-utils/http"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
@@ -48,36 +51,48 @@ func processDevices(configId int64) {
 	config, err := conf.GetConfig(context.Background(), configId)
 	if err != nil {
 		log.Error("devices", "Error reading configuration: %v", err)
+		return
 	}
-	Devices, err := FetchDevicesIntoDeviceList(config)
+	Devices, devicelist, err := fetchDevicesAndSetActiveState(config)
 	if err!= nil {
 		return
 	}
-	log.Debug("Devices", "List of devices: %v", Devices)
-	//TODO: Check for Mapping and Create Mapping
-
+	if config.ProjIds != nil {
+		for _, projId := range *config.ProjIds {
+			for device := range devicelist.Result {
+				_, err := getOrCreateMapping(config, projId, devicelist, device, Devices)
+				if err != nil {
+					return
+				}
+			}
+		}
+	}
 	//TODO: Send Data to Eliona
-
 }
 
-func FetchDevicesIntoDeviceList(config *apiserver.Configuration) ([]glutz.DeviceDb,error) {
-	var Devices []glutz.DeviceDb
 
+
+func fetchDevicesAndSetActiveState(config *apiserver.Configuration) ([]glutz.DeviceDb,*glutz.DeviceGlutz, error) {
+	if config.Enable == nil || !*config.Enable {
+		_, err :=conf.SetConfigActiveState(config.ConfigId, false)
+		return nil, nil, err
+	}
+	conf.SetConfigActiveState(config.ConfigId, true)
+	var Devices []glutz.DeviceDb
 	deviceList, err := GetDevices(config)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-
 	for result := range deviceList.Result {
 		deviceid := deviceList.Result[result].Deviceid
 		deviceStatus, err := GetDeviceStatus(config, deviceid)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		accesspointid := deviceList.Result[result].AccessPointId
 		accessPointId, err := GetLocation(config, accesspointid)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		Device := glutz.DeviceDb{
 			BatteryLevel:     deviceStatus.Result[0].BatteryLevel,
@@ -91,8 +106,57 @@ func FetchDevicesIntoDeviceList(config *apiserver.Configuration) ([]glutz.Device
 		}
 		Devices = append(Devices, Device)
 	}
-	log.Debug("Devices", "Devices: %v", Devices)
-	return Devices, nil
+	return Devices, deviceList, nil
+}
+
+func getOrCreateMapping( config *apiserver.Configuration, projId string, devicelist *glutz.DeviceGlutz, device int, Devices []glutz.DeviceDb) (*apiserver.Device, error) {
+	confDevice, err := conf.GetDevice(context.Background(), config.ConfigId, projId, devicelist.Result[device].Deviceid)
+	if err != nil {
+		log.Error("spaces", "Error when reading devices from configurations")
+	}
+	assetname := Devices[device].AccessPoint + ", " + Devices[device].Room + ", " + Devices[device].Building
+	locationid := devicelist.Result[device].AccessPointId
+	if confDevice == nil {
+		confDevice, err = createAssetandMapping(config, projId, devicelist.Result[device].Deviceid, assetname, locationid)
+		if err != nil {
+			log.Debug("devices", "Error creating asset and mapping")
+			return nil, err
+		}
+	} else {
+		exists, err := asset.ExistAsset(confDevice.AssetId)
+		if err != nil {
+			log.Error("devices", "Error when checking if asset already exists")
+			return nil, err
+		}
+		if exists {
+			log.Debug("devices", "Asset already exists for device %v with AssetId %v", assetname, confDevice.AssetId)
+		} else {
+			log.Debug("devices", "Asset with AssetId %v does no longer exist in eliona", confDevice.AssetId)
+			return nil, nil
+		}
+	}
+	return confDevice, nil
+}
+
+func createAssetandMapping(config *apiserver.Configuration, projId string, deviceid string, assetname string, locationId string)(*apiserver.Device, error){
+	assetId, err := eliona.CreateNewAsset(projId, deviceid, assetname)
+	if err != nil {
+		log.Error("devices", "Error when creating new asset")
+		return nil, err
+	}
+	log.Debug("devices", "AssetId %v assigned to device %v", assetId, assetname)
+	err = conf.InsertSpace(context.Background(), config.ConfigId, projId, deviceid, assetId, locationId)
+	if err != nil {
+		log.Error("devices", "Error when inserting device into database:%v", err)
+		return nil, err
+	}
+	log.Debug("devices", "Asset with AssetId %v corresponding to device %v inserted into eliona database", assetId, assetname)
+	confDevice, err := conf.GetDevice(context.Background(),config.ConfigId, projId, deviceid)
+	if err != nil {
+		log.Error("devices", "Error when reading devices from configurations")
+		return nil, err
+	}
+	return confDevice, nil
 }
 
 
