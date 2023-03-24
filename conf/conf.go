@@ -128,6 +128,20 @@ func SetConfigActiveState(configID int64, state bool) (int64, error) {
 	})
 }
 
+func IsConfigActive(config apiserver.Configuration) bool {
+	return config.Active == nil || *config.Active
+}
+
+func IsConfigEnabled(config apiserver.Configuration) bool {
+	return config.Enable == nil || *config.Enable
+}
+
+func SetAllConfigsInactive(ctx context.Context) (int64, error) {
+	return dbglutz.Configs().UpdateAllG(ctx, dbglutz.M{
+		dbglutz.ConfigColumns.Active: false,
+	})
+}
+
 
 
 ///// API to DB Mappings //////
@@ -148,7 +162,7 @@ func apiConfigFromDbConfig(dbConfig *dbglutz.Config) *apiserver.Configuration {
 	apiConfig.Password = dbConfig.Password
 	apiConfig.ApiToken = dbConfig.APIToken
 	apiConfig.Url = dbConfig.URL
-	apiConfig.Active = dbConfig.Active.Bool
+	apiConfig.Active = &dbConfig.Active.Bool
 	apiConfig.Enable = &dbConfig.Enable.Bool
 	apiConfig.RequestTimeout = dbConfig.RequestTimeout.Int32
 	apiConfig.RefreshInterval = dbConfig.RefreshInterval.Int32
@@ -163,7 +177,7 @@ func dbConfigFromApiConfig(apiConfig *apiserver.Configuration) *dbglutz.Config {
 	dbConfig.Password = apiConfig.Password
 	dbConfig.APIToken = apiConfig.ApiToken
 	dbConfig.URL = apiConfig.Url
-	dbConfig.Active = null.BoolFromPtr(&apiConfig.Active)
+	dbConfig.Active = null.BoolFromPtr(apiConfig.Active)
 	dbConfig.Enable = null.BoolFromPtr(apiConfig.Enable)
 	dbConfig.RefreshInterval = null.Int32FromPtr(&apiConfig.RefreshInterval)
 	dbConfig.RequestTimeout = null.Int32FromPtr(&apiConfig.RequestTimeout)
@@ -172,3 +186,4 @@ func dbConfigFromApiConfig(apiConfig *apiserver.Configuration) *dbglutz.Config {
 	}
 	return &dbConfig
 }
+

@@ -24,7 +24,6 @@ import (
 	"glutz/conf"
 	"glutz/eliona"
 	"time"
-	"context"
 )
 
 // The main function starts the app by starting all services necessary for this app and waits
@@ -43,19 +42,10 @@ func main() {
 		eliona.InitEliona,
 	)
 
-	var functions []func()
-	functions = append(functions, listenApi)
-	configs, err := conf.GetConfigs(context.Background())
-	if err != nil {
-		log.Error("Configurations", "Error retrieving configurations")
-	}
-	for _, config := range configs {
-		log.Debug("main", "Appending processDevices() with configID: %v and refresh interval %v", config.ConfigId, config.RefreshInterval)
-		functions = append(functions, common.LoopWithParam(processDevices, config.ConfigId, time.Duration(config.RefreshInterval)*time.Second))	
-	}
-	common.WaitFor(functions...)
-	for _, config:= range configs {
-		conf.SetConfigActiveState(config.ConfigId, false)
-	}
+	common.WaitForWithOs(
+		common.Loop(checkConfigandSetActiveState, time.Second),
+		listenApi,
+	)
+
 	log.Info("main", "Terminate the app.")
 }

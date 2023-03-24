@@ -31,30 +31,75 @@ import (
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 )
 
-
-
 type Request struct {
-    Jsonrpc string        `json:"jsonrpc"`
-    ID      string        `json:"id"`
-    Method  string        `json:"method"`
-    Params  []interface{} `json:"params"`
+	Jsonrpc string        `json:"jsonrpc"`
+	ID      string        `json:"id"`
+	Method  string        `json:"method"`
+	Params  []interface{} `json:"params"`
 }
 
 type DeviceParams struct {
-    DeviceID string `json:"deviceid"`
+	DeviceID string `json:"deviceid"`
+}
+
+func checkConfigandSetActiveState() {
+	configs, err := conf.GetConfigs(context.Background())
+	if err != nil {
+		log.Fatal("conf", "Couldn't read configs from DB: %v", err)
+		return
+	}
+
+	for _, config := range configs {
+		// Skip config if disabled and set inactive
+		if !conf.IsConfigEnabled(config) {
+			if conf.IsConfigActive(config) {
+				conf.SetConfigActiveState(config.ConfigId, false)
+			}
+			continue
+		}
+
+		// Signals that this config is active
+		if !conf.IsConfigActive(config) {
+			conf.SetConfigActiveState(config.ConfigId, true)
+			log.Info("conf", "Collecting initialized with Configuration %d:\n"+
+				"Username: %s\n"+
+				"Password: %s\n"+
+				"API Token: %s\n"+
+				"Active: %t\n"+
+				"Enable: %t\n"+
+				"Refresh Interval: %d\n"+
+				"Request Timeout: %d\n"+
+				"Project IDs: %v\n",
+				config.ConfigId,
+				config.Username,
+				config.Password,
+				config.ApiToken,
+				*config.Active,
+				*config.Enable,
+				config.RequestTimeout,
+				config.RefreshInterval,
+				*config.ProjIds)
+		}
+
+		// Runs the ReadNode. If the current node is currently running, skip the execution
+		// After the execution sleeps the configured timeout. During this timeout no further
+		// process for this config is started to read the data.
+		common.RunOnceWithParam(func(config apiserver.Configuration) {
+			log.Info("main", "Processing devices for configId %d started", config.ConfigId)
+
+			processDevices(config)
+
+			log.Info("main", "Processing devices for configId %d finished", config.ConfigId)
+
+			time.Sleep(time.Second * time.Duration(config.RefreshInterval))
+		}, config, config.ConfigId)
+	}
 }
 
 
-
-// doAnything is the main app function which is called periodically
-func processDevices(configId int64) {
-	config, err := conf.GetConfig(context.Background(), configId)
+func processDevices(config apiserver.Configuration) {
+	Devices, devicelist, err := fetchDevices(config)
 	if err != nil {
-		log.Error("devices", "Error reading configuration: %v", err)
-		return
-	}
-	Devices, devicelist, err := fetchDevicesAndSetActiveState(config)
-	if err!= nil {
 		return
 	}
 	if config.ProjIds != nil {
@@ -77,12 +122,8 @@ func processDevices(configId int64) {
 
 
 
-func fetchDevicesAndSetActiveState(config *apiserver.Configuration) ([]glutz.DeviceDb,*glutz.DeviceGlutz, error) {
-	if config.Enable == nil || !*config.Enable {
-		_, err :=conf.SetConfigActiveState(config.ConfigId, false)
-		return nil, nil, err
-	}
-	conf.SetConfigActiveState(config.ConfigId, true)
+
+func fetchDevices(config apiserver.Configuration) ([]glutz.DeviceDb, *glutz.DeviceGlutz, error) {
 	var Devices []glutz.DeviceDb
 	deviceList, err := GetDevices(config)
 	if err != nil {
@@ -114,7 +155,7 @@ func fetchDevicesAndSetActiveState(config *apiserver.Configuration) ([]glutz.Dev
 	return Devices, deviceList, nil
 }
 
-func getOrCreateMapping( config *apiserver.Configuration, projId string, devicelist *glutz.DeviceGlutz, device int, Devices []glutz.DeviceDb) (*apiserver.Device, error) {
+func getOrCreateMapping(config apiserver.Configuration, projId string, devicelist *glutz.DeviceGlutz, device int, Devices []glutz.DeviceDb) (*apiserver.Device, error) {
 	confDevice, err := conf.GetDevice(context.Background(), config.ConfigId, projId, devicelist.Result[device].Deviceid)
 	if err != nil {
 		log.Error("spaces", "Error when reading devices from configurations")
@@ -143,7 +184,7 @@ func getOrCreateMapping( config *apiserver.Configuration, projId string, devicel
 	return confDevice, nil
 }
 
-func createAssetandMapping(config *apiserver.Configuration, projId string, deviceid string, assetname string, locationId string)(*apiserver.Device, error){
+func createAssetandMapping(config apiserver.Configuration, projId string, deviceid string, assetname string, locationId string) (*apiserver.Device, error) {
 	assetId, err := eliona.CreateNewAsset(projId, deviceid, assetname)
 	if err != nil {
 		log.Error("devices", "Error when creating new asset")
@@ -156,13 +197,14 @@ func createAssetandMapping(config *apiserver.Configuration, projId string, devic
 		return nil, err
 	}
 	log.Debug("devices", "Asset with AssetId %v corresponding to device %v inserted into eliona database", assetId, assetname)
-	confDevice, err := conf.GetDevice(context.Background(),config.ConfigId, projId, deviceid)
+	confDevice, err := conf.GetDevice(context.Background(), config.ConfigId, projId, deviceid)
 	if err != nil {
 		log.Error("devices", "Error when reading devices from configurations")
 		return nil, err
 	}
 	return confDevice, nil
 }
+
 
 func sendData(Devices []glutz.DeviceDb, device int, confDevice *apiserver.Device) error {
 	err:=eliona.UpsertInputData(Devices[device], confDevice.AssetId)
@@ -177,12 +219,14 @@ func sendData(Devices []glutz.DeviceDb, device int, confDevice *apiserver.Device
 }
 
 
-func GetDevices(config *apiserver.Configuration)(*glutz.DeviceGlutz, error){
+
+func GetDevices(config apiserver.Configuration) (*glutz.DeviceGlutz, error) {
+
 	deviceRequest := Request{
 		Jsonrpc: "2.0",
-		ID: "m",
-		Method: "eAccess.getModel",
-		Params:[]interface{}{
+		ID:      "m",
+		Method:  "eAccess.getModel",
+		Params: []interface{}{
 			"Devices",
 		},
 	}
@@ -199,7 +243,7 @@ func GetDevices(config *apiserver.Configuration)(*glutz.DeviceGlutz, error){
 	return &deviceList, nil
 }
 
-func GetDeviceStatus(config *apiserver.Configuration, device_id string)(*glutz.DeviceStatusGlutz, error) {
+func GetDeviceStatus(config apiserver.Configuration, device_id string) (*glutz.DeviceStatusGlutz, error) {
 	req := Request{
 		Jsonrpc: "2.0",
 		ID:      "m",
@@ -222,7 +266,7 @@ func GetDeviceStatus(config *apiserver.Configuration, device_id string)(*glutz.D
 	return &deviceStatus, nil
 }
 
-func GetLocation(config *apiserver.Configuration, accessPointId string)(*glutz.DeviceAccessPointGlutz,error){
+func GetLocation(config apiserver.Configuration, accessPointId string) (*glutz.DeviceAccessPointGlutz, error) {
 	req := Request{
 		Jsonrpc: "2.0",
 		ID:      "m",
@@ -244,7 +288,6 @@ func GetLocation(config *apiserver.Configuration, accessPointId string)(*glutz.D
 	}
 	return &deviceAccessPoint, nil
 }
-
 
 // listenApi starts the API server and listen for requests
 func listenApi() {

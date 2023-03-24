@@ -28,7 +28,7 @@ type Configuration struct {
 	Url string `json:"url,omitempty"`
 
 	// Set to `true` by the app when running and to `false` when app is stopped
-	Active bool `json:"active,omitempty"`
+	Active *bool `json:"active,omitempty"`
 
 	// Flag to enable or disable the endpoint
 	Enable *bool `json:"enable,omitempty"`
