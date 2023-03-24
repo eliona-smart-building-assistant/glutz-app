@@ -87,7 +87,7 @@ func checkConfigandSetActiveState() {
 		common.RunOnceWithParam(func(config apiserver.Configuration) {
 			log.Info("main", "Processing devices for configId %d started", config.ConfigId)
 
-			processDevices(config.ConfigId)
+			processDevices(config)
 
 			log.Info("main", "Processing devices for configId %d finished", config.ConfigId)
 
@@ -96,14 +96,9 @@ func checkConfigandSetActiveState() {
 	}
 }
 
-// doAnything is the main app function which is called periodically
-func processDevices(configId int64) {
-	config, err := conf.GetConfig(context.Background(), configId)
-	if err != nil {
-		log.Error("devices", "Error reading configuration: %v", err)
-		return
-	}
-	Devices, devicelist, err := fetchDevicesAndSetActiveState(config)
+
+func processDevices(config apiserver.Configuration) {
+	Devices, devicelist, err := fetchDevices(config)
 	if err != nil {
 		return
 	}
@@ -120,12 +115,7 @@ func processDevices(configId int64) {
 	//TODO: Send Data to Eliona
 }
 
-func fetchDevicesAndSetActiveState(config *apiserver.Configuration) ([]glutz.DeviceDb, *glutz.DeviceGlutz, error) {
-	if config.Enable == nil || !*config.Enable {
-		_, err := conf.SetConfigActiveState(config.ConfigId, false)
-		return nil, nil, err
-	}
-	conf.SetConfigActiveState(config.ConfigId, true)
+func fetchDevices(config apiserver.Configuration) ([]glutz.DeviceDb, *glutz.DeviceGlutz, error) {
 	var Devices []glutz.DeviceDb
 	deviceList, err := GetDevices(config)
 	if err != nil {
@@ -157,7 +147,7 @@ func fetchDevicesAndSetActiveState(config *apiserver.Configuration) ([]glutz.Dev
 	return Devices, deviceList, nil
 }
 
-func getOrCreateMapping(config *apiserver.Configuration, projId string, devicelist *glutz.DeviceGlutz, device int, Devices []glutz.DeviceDb) (*apiserver.Device, error) {
+func getOrCreateMapping(config apiserver.Configuration, projId string, devicelist *glutz.DeviceGlutz, device int, Devices []glutz.DeviceDb) (*apiserver.Device, error) {
 	confDevice, err := conf.GetDevice(context.Background(), config.ConfigId, projId, devicelist.Result[device].Deviceid)
 	if err != nil {
 		log.Error("spaces", "Error when reading devices from configurations")
@@ -186,7 +176,7 @@ func getOrCreateMapping(config *apiserver.Configuration, projId string, deviceli
 	return confDevice, nil
 }
 
-func createAssetandMapping(config *apiserver.Configuration, projId string, deviceid string, assetname string, locationId string) (*apiserver.Device, error) {
+func createAssetandMapping(config apiserver.Configuration, projId string, deviceid string, assetname string, locationId string) (*apiserver.Device, error) {
 	assetId, err := eliona.CreateNewAsset(projId, deviceid, assetname)
 	if err != nil {
 		log.Error("devices", "Error when creating new asset")
@@ -207,7 +197,7 @@ func createAssetandMapping(config *apiserver.Configuration, projId string, devic
 	return confDevice, nil
 }
 
-func GetDevices(config *apiserver.Configuration) (*glutz.DeviceGlutz, error) {
+func GetDevices(config apiserver.Configuration) (*glutz.DeviceGlutz, error) {
 	deviceRequest := Request{
 		Jsonrpc: "2.0",
 		ID:      "m",
@@ -229,7 +219,7 @@ func GetDevices(config *apiserver.Configuration) (*glutz.DeviceGlutz, error) {
 	return &deviceList, nil
 }
 
-func GetDeviceStatus(config *apiserver.Configuration, device_id string) (*glutz.DeviceStatusGlutz, error) {
+func GetDeviceStatus(config apiserver.Configuration, device_id string) (*glutz.DeviceStatusGlutz, error) {
 	req := Request{
 		Jsonrpc: "2.0",
 		ID:      "m",
@@ -252,7 +242,7 @@ func GetDeviceStatus(config *apiserver.Configuration, device_id string) (*glutz.
 	return &deviceStatus, nil
 }
 
-func GetLocation(config *apiserver.Configuration, accessPointId string) (*glutz.DeviceAccessPointGlutz, error) {
+func GetLocation(config apiserver.Configuration, accessPointId string) (*glutz.DeviceAccessPointGlutz, error) {
 	req := Request{
 		Jsonrpc: "2.0",
 		ID:      "m",
