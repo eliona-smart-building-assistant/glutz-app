@@ -278,7 +278,7 @@ components:
           type: boolean
           readOnly: true
           description: Set to `true` by the app when running and to `false` when app is stopped
-          nullable: false
+          nullable: true
         enable:
           type: boolean
           description: Flag to enable or disable the endpoint
