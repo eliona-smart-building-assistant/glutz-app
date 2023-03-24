@@ -60,15 +60,20 @@ func processDevices(configId int64) {
 	if config.ProjIds != nil {
 		for _, projId := range *config.ProjIds {
 			for device := range devicelist.Result {
-				_, err := getOrCreateMapping(config, projId, devicelist, device, Devices)
+				confDevice, err := getOrCreateMapping(config, projId, devicelist, device, Devices)
+				if err != nil {
+					return
+				}
+				err = sendData(Devices, device, confDevice)
 				if err != nil {
 					return
 				}
 			}
 		}
 	}
-	//TODO: Send Data to Eliona
 }
+
+
 
 
 
@@ -157,6 +162,18 @@ func createAssetandMapping(config *apiserver.Configuration, projId string, devic
 		return nil, err
 	}
 	return confDevice, nil
+}
+
+func sendData(Devices []glutz.DeviceDb, device int, confDevice *apiserver.Device) error {
+	err:=eliona.UpsertInputData(Devices[device], confDevice.AssetId)
+	if err != nil {
+		return err
+	}
+	eliona.UpsertInfoData(Devices[device], confDevice.AssetId)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 
