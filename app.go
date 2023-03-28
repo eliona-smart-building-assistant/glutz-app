@@ -295,13 +295,13 @@ func GetLocation(config apiserver.Configuration, accessPointId string) (*glutz.D
 func checkForOutputChanges(){
 	log.Debug("Output", "Here")
 	// Careful about what gets uploaded to github here
-	conn, err:= http.NewWebSocketConnectionWithApiKey("http://localhost:3000/v2/data-listener", "X-API-Key", "secret")
+	conn, err:= http.NewWebSocketConnectionWithApiKey(common.Getenv("API_ENDPOINT", "")+"/data-listener", "X-API-Key", common.Getenv("API_TOKEN", ""))
 	if err!= nil {
 		log.Error("Output", "Error creating web socket connection")
 		return
 	}
 	outputs:= make(chan api.Data)
-	go http.ListenWebSocket[api.Data](conn, outputs)
+	go http.ListenWebSocket(conn, outputs)
 	for output:= range outputs {
 		log.Debug("Output", "Output: %v", output.Data)
 	}
