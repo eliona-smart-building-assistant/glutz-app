@@ -75,7 +75,7 @@
         {
 			"enable": true,
 			"name": "openable_duration",
-			"subtype": "info",
+			"subtype": "output",
 			"translation": {
 				"de": "Öffnungsbare Zeit",
 				"en": "Openable Duration"
