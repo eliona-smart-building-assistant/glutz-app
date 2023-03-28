@@ -26,6 +26,8 @@ create table if not exists glutz.config
     enable              boolean default false,
     request_timeout     integer default 120,
     refresh_interval    integer default 60,
+    default_openable_duration   integer default 10,
+    initialized      boolean default false,
     project_ids          text[]
 );
 
