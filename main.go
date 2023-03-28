@@ -43,7 +43,7 @@ func main() {
 	)
 
 	common.WaitForWithOs(
-		common.Loop(checkConfigandSetActiveState, time.Second),
+		common.Loop(checkForOutputChanges, time.Second), common.Loop(checkConfigandSetActiveState, time.Second), 
 		listenApi,
 	)
 

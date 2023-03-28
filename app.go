@@ -25,6 +25,8 @@ import (
 	nethttp "net/http"
 	"time"
 
+	//api "github.com/eliona-smart-building-assistant/go-eliona-api-client/"
+	api "github.com/eliona-smart-building-assistant/go-eliona-api-client/v2"
 	"github.com/eliona-smart-building-assistant/go-eliona/asset"
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 	"github.com/eliona-smart-building-assistant/go-utils/http"
@@ -287,6 +289,24 @@ func GetLocation(config apiserver.Configuration, accessPointId string) (*glutz.D
 		return nil, err
 	}
 	return &deviceAccessPoint, nil
+}
+
+
+func checkForOutputChanges(){
+	log.Debug("Output", "Here")
+	// Careful about what gets uploaded to github here
+	conn, err:= http.NewWebSocketConnectionWithApiKey("http://localhost:3000/v2/data-listener", "X-API-Key", "secret")
+	if err!= nil {
+		log.Error("Output", "Error creating web socket connection")
+		return
+	}
+	outputs:= make(chan api.Data)
+	go http.ListenWebSocket[api.Data](conn, outputs)
+	for output:= range outputs {
+		log.Debug("Output", "Output: %v", output.Data)
+	}
+	// return
+
 }
 
 // listenApi starts the API server and listen for requests
