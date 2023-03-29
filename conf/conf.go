@@ -43,6 +43,35 @@ func GetDevices(ctx context.Context, configId int64) ([]apiserver.Device, error)
 	return apiDevices, nil
 }
 
+func ExistGlutzDeviceWithAssetId(ctx context.Context, assetId int32)(bool, error){
+	var mods []qm.QueryMod
+	mods = append(mods, dbglutz.DeviceWhere.AssetID.EQ(assetId))
+	device, err := dbglutz.Devices(mods...).All(ctx, db.Database("glutz")) 
+	if err != nil {
+		return false, err
+	}
+	if len(device) == 0 {
+		return false, nil
+	}
+	if len(device) == 1 {
+		return true, nil
+	} 
+	return false, err
+}
+
+func GetDevicewithAssetId(ctx context.Context, assetId int32)(*apiserver.Device, error){
+	var mods []qm.QueryMod
+	mods = append(mods, dbglutz.DeviceWhere.AssetID.EQ(assetId))
+	device, err := dbglutz.Devices(mods...).All(ctx, db.Database("glutz")) 
+	if err != nil {
+		return nil, err
+	}
+	if len(device)!= 1 {
+		return nil, nil
+	}
+	return apiDevicesFromDbDevices(device[0]), nil
+}
+
 func GetDevice(ctx context.Context, configId int64, projectId string, deviceId string) (*apiserver.Device, error) {
 	var mods []qm.QueryMod 
 	if configId > 0 {

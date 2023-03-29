@@ -63,3 +63,9 @@ type Properties struct{
 	Jsonrpc		string `json:"jsonrpc"`
 	Result 		bool `json:"result"`
 }
+
+type GlutzOpenableDuration struct{
+	Id 			string `json:"id"`
+	Jsonrpc		string `json:"jsonrpc"`
+	Result 		string `json:"result"`
+}
