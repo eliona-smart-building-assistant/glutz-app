@@ -128,6 +128,14 @@ func SetConfigActiveState(configID int64, state bool) (int64, error) {
 	})
 }
 
+func SetConfigInitialisedState(configID int64, state bool) (int64, error) {
+	return dbglutz.Configs(
+		dbglutz.ConfigWhere.ConfigID.EQ(null.Int64FromPtr(&configID).Int64),
+	).UpdateAll(context.Background(), db.Database("glutz"), dbglutz.M{
+		dbglutz.ConfigColumns.Initialized: state,
+	})
+}
+
 func IsConfigActive(config apiserver.Configuration) bool {
 	return config.Active == nil || *config.Active
 }
@@ -166,6 +174,8 @@ func apiConfigFromDbConfig(dbConfig *dbglutz.Config) *apiserver.Configuration {
 	apiConfig.Enable = &dbConfig.Enable.Bool
 	apiConfig.RequestTimeout = dbConfig.RequestTimeout.Int32
 	apiConfig.RefreshInterval = dbConfig.RefreshInterval.Int32
+	apiConfig.DefaultOpenableDuration = dbConfig.DefaultOpenableDuration.Int32
+	apiConfig.Initialized = &dbConfig.Initialized.Bool
 	apiConfig.ProjIds = common.Ptr[[]string](dbConfig.ProjectIds)
 	return &apiConfig
 }
@@ -181,6 +191,8 @@ func dbConfigFromApiConfig(apiConfig *apiserver.Configuration) *dbglutz.Config {
 	dbConfig.Enable = null.BoolFromPtr(apiConfig.Enable)
 	dbConfig.RefreshInterval = null.Int32FromPtr(&apiConfig.RefreshInterval)
 	dbConfig.RequestTimeout = null.Int32FromPtr(&apiConfig.RequestTimeout)
+	dbConfig.DefaultOpenableDuration = null.Int32FromPtr(&apiConfig.DefaultOpenableDuration)
+	dbConfig.Initialized = null.BoolFromPtr(apiConfig.Initialized)
 	if apiConfig.ProjIds != nil {
 		dbConfig.ProjectIds = *apiConfig.ProjIds
 	}

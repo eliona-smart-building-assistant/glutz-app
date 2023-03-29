@@ -25,67 +25,77 @@ import (
 
 // Config is an object representing the database table.
 type Config struct {
-	ConfigID        int64             `boil:"config_id" json:"config_id" toml:"config_id" yaml:"config_id"`
-	Username        string            `boil:"username" json:"username" toml:"username" yaml:"username"`
-	Password        string            `boil:"password" json:"password" toml:"password" yaml:"password"`
-	APIToken        string            `boil:"api_token" json:"api_token" toml:"api_token" yaml:"api_token"`
-	URL             string            `boil:"url" json:"url" toml:"url" yaml:"url"`
-	Active          null.Bool         `boil:"active" json:"active,omitempty" toml:"active" yaml:"active,omitempty"`
-	Enable          null.Bool         `boil:"enable" json:"enable,omitempty" toml:"enable" yaml:"enable,omitempty"`
-	RequestTimeout  null.Int32        `boil:"request_timeout" json:"request_timeout,omitempty" toml:"request_timeout" yaml:"request_timeout,omitempty"`
-	RefreshInterval null.Int32        `boil:"refresh_interval" json:"refresh_interval,omitempty" toml:"refresh_interval" yaml:"refresh_interval,omitempty"`
-	ProjectIds      types.StringArray `boil:"project_ids" json:"project_ids,omitempty" toml:"project_ids" yaml:"project_ids,omitempty"`
+	ConfigID                int64             `boil:"config_id" json:"config_id" toml:"config_id" yaml:"config_id"`
+	Username                string            `boil:"username" json:"username" toml:"username" yaml:"username"`
+	Password                string            `boil:"password" json:"password" toml:"password" yaml:"password"`
+	APIToken                string            `boil:"api_token" json:"api_token" toml:"api_token" yaml:"api_token"`
+	URL                     string            `boil:"url" json:"url" toml:"url" yaml:"url"`
+	Active                  null.Bool         `boil:"active" json:"active,omitempty" toml:"active" yaml:"active,omitempty"`
+	Enable                  null.Bool         `boil:"enable" json:"enable,omitempty" toml:"enable" yaml:"enable,omitempty"`
+	RequestTimeout          null.Int32        `boil:"request_timeout" json:"request_timeout,omitempty" toml:"request_timeout" yaml:"request_timeout,omitempty"`
+	RefreshInterval         null.Int32        `boil:"refresh_interval" json:"refresh_interval,omitempty" toml:"refresh_interval" yaml:"refresh_interval,omitempty"`
+	DefaultOpenableDuration null.Int32        `boil:"default_openable_duration" json:"default_openable_duration,omitempty" toml:"default_openable_duration" yaml:"default_openable_duration,omitempty"`
+	Initialized             null.Bool         `boil:"initialized" json:"initialized,omitempty" toml:"initialized" yaml:"initialized,omitempty"`
+	ProjectIds              types.StringArray `boil:"project_ids" json:"project_ids,omitempty" toml:"project_ids" yaml:"project_ids,omitempty"`
 
 	R *configR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L configL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var ConfigColumns = struct {
-	ConfigID        string
-	Username        string
-	Password        string
-	APIToken        string
-	URL             string
-	Active          string
-	Enable          string
-	RequestTimeout  string
-	RefreshInterval string
-	ProjectIds      string
+	ConfigID                string
+	Username                string
+	Password                string
+	APIToken                string
+	URL                     string
+	Active                  string
+	Enable                  string
+	RequestTimeout          string
+	RefreshInterval         string
+	DefaultOpenableDuration string
+	Initialized             string
+	ProjectIds              string
 }{
-	ConfigID:        "config_id",
-	Username:        "username",
-	Password:        "password",
-	APIToken:        "api_token",
-	URL:             "url",
-	Active:          "active",
-	Enable:          "enable",
-	RequestTimeout:  "request_timeout",
-	RefreshInterval: "refresh_interval",
-	ProjectIds:      "project_ids",
+	ConfigID:                "config_id",
+	Username:                "username",
+	Password:                "password",
+	APIToken:                "api_token",
+	URL:                     "url",
+	Active:                  "active",
+	Enable:                  "enable",
+	RequestTimeout:          "request_timeout",
+	RefreshInterval:         "refresh_interval",
+	DefaultOpenableDuration: "default_openable_duration",
+	Initialized:             "initialized",
+	ProjectIds:              "project_ids",
 }
 
 var ConfigTableColumns = struct {
-	ConfigID        string
-	Username        string
-	Password        string
-	APIToken        string
-	URL             string
-	Active          string
-	Enable          string
-	RequestTimeout  string
-	RefreshInterval string
-	ProjectIds      string
+	ConfigID                string
+	Username                string
+	Password                string
+	APIToken                string
+	URL                     string
+	Active                  string
+	Enable                  string
+	RequestTimeout          string
+	RefreshInterval         string
+	DefaultOpenableDuration string
+	Initialized             string
+	ProjectIds              string
 }{
-	ConfigID:        "config.config_id",
-	Username:        "config.username",
-	Password:        "config.password",
-	APIToken:        "config.api_token",
-	URL:             "config.url",
-	Active:          "config.active",
-	Enable:          "config.enable",
-	RequestTimeout:  "config.request_timeout",
-	RefreshInterval: "config.refresh_interval",
-	ProjectIds:      "config.project_ids",
+	ConfigID:                "config.config_id",
+	Username:                "config.username",
+	Password:                "config.password",
+	APIToken:                "config.api_token",
+	URL:                     "config.url",
+	Active:                  "config.active",
+	Enable:                  "config.enable",
+	RequestTimeout:          "config.request_timeout",
+	RefreshInterval:         "config.refresh_interval",
+	DefaultOpenableDuration: "config.default_openable_duration",
+	Initialized:             "config.initialized",
+	ProjectIds:              "config.project_ids",
 }
 
 // Generated where
@@ -225,27 +235,31 @@ func (w whereHelpertypes_StringArray) IsNotNull() qm.QueryMod {
 }
 
 var ConfigWhere = struct {
-	ConfigID        whereHelperint64
-	Username        whereHelperstring
-	Password        whereHelperstring
-	APIToken        whereHelperstring
-	URL             whereHelperstring
-	Active          whereHelpernull_Bool
-	Enable          whereHelpernull_Bool
-	RequestTimeout  whereHelpernull_Int32
-	RefreshInterval whereHelpernull_Int32
-	ProjectIds      whereHelpertypes_StringArray
+	ConfigID                whereHelperint64
+	Username                whereHelperstring
+	Password                whereHelperstring
+	APIToken                whereHelperstring
+	URL                     whereHelperstring
+	Active                  whereHelpernull_Bool
+	Enable                  whereHelpernull_Bool
+	RequestTimeout          whereHelpernull_Int32
+	RefreshInterval         whereHelpernull_Int32
+	DefaultOpenableDuration whereHelpernull_Int32
+	Initialized             whereHelpernull_Bool
+	ProjectIds              whereHelpertypes_StringArray
 }{
-	ConfigID:        whereHelperint64{field: "\"glutz\".\"config\".\"config_id\""},
-	Username:        whereHelperstring{field: "\"glutz\".\"config\".\"username\""},
-	Password:        whereHelperstring{field: "\"glutz\".\"config\".\"password\""},
-	APIToken:        whereHelperstring{field: "\"glutz\".\"config\".\"api_token\""},
-	URL:             whereHelperstring{field: "\"glutz\".\"config\".\"url\""},
-	Active:          whereHelpernull_Bool{field: "\"glutz\".\"config\".\"active\""},
-	Enable:          whereHelpernull_Bool{field: "\"glutz\".\"config\".\"enable\""},
-	RequestTimeout:  whereHelpernull_Int32{field: "\"glutz\".\"config\".\"request_timeout\""},
-	RefreshInterval: whereHelpernull_Int32{field: "\"glutz\".\"config\".\"refresh_interval\""},
-	ProjectIds:      whereHelpertypes_StringArray{field: "\"glutz\".\"config\".\"project_ids\""},
+	ConfigID:                whereHelperint64{field: "\"glutz\".\"config\".\"config_id\""},
+	Username:                whereHelperstring{field: "\"glutz\".\"config\".\"username\""},
+	Password:                whereHelperstring{field: "\"glutz\".\"config\".\"password\""},
+	APIToken:                whereHelperstring{field: "\"glutz\".\"config\".\"api_token\""},
+	URL:                     whereHelperstring{field: "\"glutz\".\"config\".\"url\""},
+	Active:                  whereHelpernull_Bool{field: "\"glutz\".\"config\".\"active\""},
+	Enable:                  whereHelpernull_Bool{field: "\"glutz\".\"config\".\"enable\""},
+	RequestTimeout:          whereHelpernull_Int32{field: "\"glutz\".\"config\".\"request_timeout\""},
+	RefreshInterval:         whereHelpernull_Int32{field: "\"glutz\".\"config\".\"refresh_interval\""},
+	DefaultOpenableDuration: whereHelpernull_Int32{field: "\"glutz\".\"config\".\"default_openable_duration\""},
+	Initialized:             whereHelpernull_Bool{field: "\"glutz\".\"config\".\"initialized\""},
+	ProjectIds:              whereHelpertypes_StringArray{field: "\"glutz\".\"config\".\"project_ids\""},
 }
 
 // ConfigRels is where relationship names are stored.
@@ -265,9 +279,9 @@ func (*configR) NewStruct() *configR {
 type configL struct{}
 
 var (
-	configAllColumns            = []string{"config_id", "username", "password", "api_token", "url", "active", "enable", "request_timeout", "refresh_interval", "project_ids"}
+	configAllColumns            = []string{"config_id", "username", "password", "api_token", "url", "active", "enable", "request_timeout", "refresh_interval", "default_openable_duration", "initialized", "project_ids"}
 	configColumnsWithoutDefault = []string{"username", "password", "api_token", "url"}
-	configColumnsWithDefault    = []string{"config_id", "active", "enable", "request_timeout", "refresh_interval", "project_ids"}
+	configColumnsWithDefault    = []string{"config_id", "active", "enable", "request_timeout", "refresh_interval", "default_openable_duration", "initialized", "project_ids"}
 	configPrimaryKeyColumns     = []string{"config_id"}
 	configGeneratedColumns      = []string{}
 )

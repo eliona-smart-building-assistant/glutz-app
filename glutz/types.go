@@ -58,3 +58,8 @@ type DeviceAccessPointGlutz struct{
 	Result 		[]string `json:"result"`
 }
 
+type Properties struct{
+	Id 			string `json:"id"`
+	Jsonrpc		string `json:"jsonrpc"`
+	Result 		bool `json:"result"`
+}

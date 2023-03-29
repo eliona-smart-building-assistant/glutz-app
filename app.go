@@ -98,9 +98,8 @@ func checkConfigandSetActiveState() {
 	}
 }
 
-
 func processDevices(config apiserver.Configuration) {
-	Devices, devicelist, err := fetchDevices(config)
+	Devices, devicelist, err := fetchDevicesAndCreateGlutzProperty(config)
 	if err != nil {
 		return
 	}
@@ -120,16 +119,18 @@ func processDevices(config apiserver.Configuration) {
 	}
 }
 
-
-
-
-
-
-func fetchDevices(config apiserver.Configuration) ([]glutz.DeviceDb, *glutz.DeviceGlutz, error) {
+func fetchDevicesAndCreateGlutzProperty(config apiserver.Configuration) ([]glutz.DeviceDb, *glutz.DeviceGlutz, error) {
 	var Devices []glutz.DeviceDb
 	deviceList, err := GetDevices(config)
 	if err != nil {
 		return nil, nil, err
+	}
+	openableDurationSet, err := SetAccessPointPropertyOpenableDuration(config)
+	if err != nil {
+		return nil, nil, err
+	}
+	if openableDurationSet {
+		conf.SetConfigInitialisedState(config.ConfigId, true)
 	}
 	for result := range deviceList.Result {
 		deviceid := deviceList.Result[result].Deviceid
@@ -207,9 +208,8 @@ func createAssetandMapping(config apiserver.Configuration, projId string, device
 	return confDevice, nil
 }
 
-
 func sendData(Devices []glutz.DeviceDb, device int, confDevice *apiserver.Device) error {
-	err:=eliona.UpsertInputData(Devices[device], confDevice.AssetId)
+	err := eliona.UpsertInputData(Devices[device], confDevice.AssetId)
 	if err != nil {
 		return err
 	}
@@ -219,8 +219,6 @@ func sendData(Devices []glutz.DeviceDb, device int, confDevice *apiserver.Device
 	}
 	return nil
 }
-
-
 
 func GetDevices(config apiserver.Configuration) (*glutz.DeviceGlutz, error) {
 
@@ -243,6 +241,30 @@ func GetDevices(config apiserver.Configuration) (*glutz.DeviceGlutz, error) {
 		return nil, err
 	}
 	return &deviceList, nil
+}
+
+func SetAccessPointPropertyOpenableDuration(config apiserver.Configuration) (bool, error) {
+	req := Request{
+		Jsonrpc: "2.0",
+		ID:      "m",
+		Method:  "eAccess.setAccessPointProperty",
+		Params: []interface{}{
+			"/Properties/Eliona/Openable Duration [s]",
+			"",
+			"0",
+		},
+	}
+	accesspointrequest, err := http.NewPostRequest(config.Url, req)
+	if err != nil {
+		log.Error("devices", "Error with request: %v", err)
+		return false, err
+	}
+	propertyset, err := http.Read[glutz.Properties](accesspointrequest, time.Duration(time.Duration.Seconds(1)), true)
+	if err != nil {
+		log.Error("devices", "Error reading device status: %v", err)
+		return false, err
+	}
+	return propertyset.Result, nil
 }
 
 func GetDeviceStatus(config apiserver.Configuration, device_id string) (*glutz.DeviceStatusGlutz, error) {
@@ -291,18 +313,17 @@ func GetLocation(config apiserver.Configuration, accessPointId string) (*glutz.D
 	return &deviceAccessPoint, nil
 }
 
-
-func checkForOutputChanges(){
+func checkForOutputChanges() {
 	log.Debug("Output", "Here")
 	// Careful about what gets uploaded to github here
-	conn, err:= http.NewWebSocketConnectionWithApiKey(common.Getenv("API_ENDPOINT", "")+"/data-listener", "X-API-Key", common.Getenv("API_TOKEN", ""))
-	if err!= nil {
+	conn, err := http.NewWebSocketConnectionWithApiKey(common.Getenv("API_ENDPOINT", "")+"/data-listener", "X-API-Key", common.Getenv("API_TOKEN", ""))
+	if err != nil {
 		log.Error("Output", "Error creating web socket connection")
 		return
 	}
-	outputs:= make(chan api.Data)
+	outputs := make(chan api.Data)
 	go http.ListenWebSocket(conn, outputs)
-	for output:= range outputs {
+	for output := range outputs {
 		log.Debug("Output", "Output: %v", output.Data)
 	}
 	// return
