@@ -12,7 +12,7 @@ type DeviceDb struct {
 	AccessPoint      string   `json:"accessPoint"`
 	OperatingMode    int64   `json:"operatingMode"`
 	Firmware         string  `json:"firmware"`
-	OpenableDuration string  `json:"openableDuration"` // Check this!
+	Openable 		 bool  `json:"openable"` 
 }
 
 

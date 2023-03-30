@@ -26,13 +26,11 @@ import (
 	"strconv"
 	"time"
 
-	//api "github.com/eliona-smart-building-assistant/go-eliona-api-client/"
 	api "github.com/eliona-smart-building-assistant/go-eliona-api-client/v2"
 	"github.com/eliona-smart-building-assistant/go-eliona/asset"
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 	"github.com/eliona-smart-building-assistant/go-utils/http"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
-	//"github.com/volatiletech/null/v8"
 )
 
 type Request struct {
@@ -157,7 +155,6 @@ func fetchDevicesAndCreateGlutzProperty(config apiserver.Configuration) ([]glutz
 			AccessPoint:      accessPointId.Result[2],
 			OperatingMode:    deviceStatus.Result[0].OperatingMode,
 			Firmware:         deviceStatus.Result[0].Firmware,
-			OpenableDuration: "",
 		}
 		Devices = append(Devices, Device)
 	}
@@ -412,7 +409,7 @@ func checkForOutputChanges() {
 				}
 			// If not, use the default value from the config table
 			}else{
-					openableDuration = int(config.DefaultOpenableDuration)
+				openableDuration = int(config.DefaultOpenableDuration)
 			}
 			//Send Openable Duration to Door
 			response, err := sendOpenableDurationToDoor(*config, int(openableDuration))
