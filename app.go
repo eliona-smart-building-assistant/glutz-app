@@ -457,15 +457,14 @@ func getOpenableDuration(config *apiserver.Configuration, device *apiserver.Devi
 
 
 func sendOpenableDurationToDoor(config apiserver.Configuration, openableDuration int, locationid string)(bool, error){
-	//TODO: Improve this and make it more general
-	durationstring := "00:00:"
+	durationstring := formatDuration(openableDuration)
 	req := Request{
 		Jsonrpc: "2.0",
 		ID:      "m",
 		Method:  "eAccess.openAccessPoint",
 		Params: []interface{}{
 			locationid,
-			Duration{Duration: durationstring + strconv.Itoa(openableDuration)},
+			Duration{Duration: durationstring},
 		},
 	}
 	setdurationrequest, err := http.NewPostRequest(config.Url, req)
@@ -491,6 +490,14 @@ func mapToStruct(m map[string]interface{}) (*OutputData, error) {
     }
 
     return s, nil
+}
+
+func formatDuration(duration int) string {
+    hours := duration / 3600
+    minutes := (duration % 3600) / 60
+    seconds := duration % 60
+
+    return fmt.Sprintf("%02d:%02d:%02d", hours, minutes, seconds)
 }
 
 // listenApi starts the API server and listen for requests
