@@ -294,15 +294,15 @@ func getAccessPointPropertyOpenableDuration(config apiserver.Configuration, loca
 	return propertyget.Result, nil
 }
 
-func sendOpenableDurationToDoor(config apiserver.Configuration, openableDuration int)(bool, error){
+func sendOpenableDurationToDoor(config apiserver.Configuration, openableDuration int, locationid string)(bool, error){
 	//TODO: Improve this and make it more general
 	durationstring := "00:00:"
 	req := Request{
 		Jsonrpc: "2.0",
 		ID:      "m",
-		Method:  "eAccess.getAccessPointProperty",
+		Method:  "eAccess.openAccessPoint",
 		Params: []interface{}{
-			"/Properties/Eliona/Openable Duration [s]",
+			locationid,
 			Duration{Duration: durationstring + strconv.Itoa(openableDuration)},
 		},
 	}
@@ -368,7 +368,7 @@ func GetLocation(config apiserver.Configuration, accessPointId string) (*glutz.D
 
 func checkForOutputChanges() {
 	// Generate Connection for listening
-	conn, err := http.NewWebSocketConnectionWithApiKey(common.Getenv("API_ENDPOINT", "")+"/data-listener", "X-API-Key", common.Getenv("API_TOKEN", ""))
+	conn, err := http.NewWebSocketConnectionWithApiKey(common.Getenv("API_ENDPOINT", "")+"/data-listener?dataSubtype=output", "X-API-Key", common.Getenv("API_TOKEN", ""))
 	if err != nil {
 		log.Error("Output", "Error creating web socket connection")
 		return
@@ -394,7 +394,7 @@ func checkForOutputChanges() {
 				log.Error("Output", "Error getting configuration %v", err)
 				return
 			}
-			// Check if a value exists in glutz environment for openable duration for this door. If so use this value.
+			// Check if a value exists in glutz environment for openable duration for this door. If so, use this value.
 			glutzOpenableDuration, err := getAccessPointPropertyOpenableDuration(*config, device.LocationId)
 			if err!= nil {
 				log.Error("Output", "Error sending openable duration to door")
@@ -412,7 +412,7 @@ func checkForOutputChanges() {
 				openableDuration = int(config.DefaultOpenableDuration)
 			}
 			//Send Openable Duration to Door
-			response, err := sendOpenableDurationToDoor(*config, int(openableDuration))
+			response, err := sendOpenableDurationToDoor(*config, int(openableDuration), device.LocationId)
 			if err!= nil {
 				log.Error("Output", "Error sending openable duration to door")
 				return
