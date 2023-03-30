@@ -25,6 +25,8 @@ import (
 	nethttp "net/http"
 	"strconv"
 	"time"
+	"fmt"
+	
 
 	api "github.com/eliona-smart-building-assistant/go-eliona-api-client/v2"
 	"github.com/eliona-smart-building-assistant/go-eliona/asset"
@@ -46,6 +48,10 @@ type DeviceParams struct {
 
 type Duration struct {
 	Duration string `json:"Duration"`
+}
+
+type OutputData struct{
+	Openable float64
 }
 
 func checkConfigandSetActiveState() {
@@ -366,6 +372,9 @@ func GetLocation(config apiserver.Configuration, accessPointId string) (*glutz.D
 	return &deviceAccessPoint, nil
 }
 
+
+
+
 func checkForOutputChanges() {
 	// Generate Connection for listening
 	conn, err := http.NewWebSocketConnectionWithApiKey(common.Getenv("API_ENDPOINT", "")+"/data-listener?dataSubtype=output", "X-API-Key", common.Getenv("API_TOKEN", ""))
@@ -380,9 +389,12 @@ func checkForOutputChanges() {
 		// Check the assetid of the updated entry is a Glutz device
 		DeviceExists, err := conf.ExistGlutzDeviceWithAssetId(context.Background(), output.AssetId)
 		if err != nil {
-			log.Error("Output", "Error checking whether a glutz device with assetid: exists %v", output.AssetId, err)
+			log.Error("Output", "Error checking if asset id corresponds to a glutz device")
+			return
 		}
-		if DeviceExists {
+		data, _ := mapToStruct(output.Data)
+		openable:= data.Openable
+		if DeviceExists && openable == 1 {
 			// Fetch the Glutz device where a value was changed in the database
 			device, err := conf.GetDevicewithAssetId(context.Background(), output.AssetId)
 			if err != nil {
@@ -423,6 +435,18 @@ func checkForOutputChanges() {
 			
 		}
 	}
+}
+
+func mapToStruct(m map[string]interface{}) (*OutputData, error) {
+    s := &OutputData{}
+
+    if v, ok := m["openable"].(float64); ok {
+        s.Openable = v
+    } else {
+        return nil, fmt.Errorf("invalid type for field 'openable'")
+    }
+
+    return s, nil
 }
 
 // listenApi starts the API server and listen for requests
