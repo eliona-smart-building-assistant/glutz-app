@@ -21,6 +21,7 @@ import (
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 	"github.com/eliona-smart-building-assistant/go-utils/db"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"glutz/conf"
 	"glutz/eliona"
 	"time"
@@ -31,6 +32,9 @@ import (
 func main() {
 	log.Info("main", "Starting the app.")
 
+	database := db.Database(app.AppName())
+	defer database.Close()
+	boil.SetDB(database)
 	// Necessary to close used init resources, because db.Pool() is used in this app.
 	defer db.ClosePool()
 
