@@ -43,6 +43,35 @@ func GetDevices(ctx context.Context, configId int64) ([]apiserver.Device, error)
 	return apiDevices, nil
 }
 
+func ExistGlutzDeviceWithAssetId(ctx context.Context, assetId int32)(bool, error){
+	var mods []qm.QueryMod
+	mods = append(mods, dbglutz.DeviceWhere.AssetID.EQ(assetId))
+	device, err := dbglutz.Devices(mods...).All(ctx, db.Database("glutz")) 
+	if err != nil {
+		return false, err
+	}
+	if len(device) == 0 {
+		return false, nil
+	}
+	if len(device) == 1 {
+		return true, nil
+	} 
+	return false, err
+}
+
+func GetDevicewithAssetId(ctx context.Context, assetId int32)(*apiserver.Device, error){
+	var mods []qm.QueryMod
+	mods = append(mods, dbglutz.DeviceWhere.AssetID.EQ(assetId))
+	device, err := dbglutz.Devices(mods...).All(ctx, db.Database("glutz")) 
+	if err != nil {
+		return nil, err
+	}
+	if len(device)!= 1 {
+		return nil, nil
+	}
+	return apiDevicesFromDbDevices(device[0]), nil
+}
+
 func GetDevice(ctx context.Context, configId int64, projectId string, deviceId string) (*apiserver.Device, error) {
 	var mods []qm.QueryMod 
 	if configId > 0 {
@@ -128,6 +157,14 @@ func SetConfigActiveState(configID int64, state bool) (int64, error) {
 	})
 }
 
+func SetConfigInitialisedState(configID int64, state bool) (int64, error) {
+	return dbglutz.Configs(
+		dbglutz.ConfigWhere.ConfigID.EQ(null.Int64FromPtr(&configID).Int64),
+	).UpdateAll(context.Background(), db.Database("glutz"), dbglutz.M{
+		dbglutz.ConfigColumns.Initialized: state,
+	})
+}
+
 func IsConfigActive(config apiserver.Configuration) bool {
 	return config.Active == nil || *config.Active
 }
@@ -166,6 +203,8 @@ func apiConfigFromDbConfig(dbConfig *dbglutz.Config) *apiserver.Configuration {
 	apiConfig.Enable = &dbConfig.Enable.Bool
 	apiConfig.RequestTimeout = dbConfig.RequestTimeout.Int32
 	apiConfig.RefreshInterval = dbConfig.RefreshInterval.Int32
+	apiConfig.DefaultOpenableDuration = dbConfig.DefaultOpenableDuration.Int32
+	apiConfig.Initialized = &dbConfig.Initialized.Bool
 	apiConfig.ProjIds = common.Ptr[[]string](dbConfig.ProjectIds)
 	return &apiConfig
 }
@@ -181,6 +220,8 @@ func dbConfigFromApiConfig(apiConfig *apiserver.Configuration) *dbglutz.Config {
 	dbConfig.Enable = null.BoolFromPtr(apiConfig.Enable)
 	dbConfig.RefreshInterval = null.Int32FromPtr(&apiConfig.RefreshInterval)
 	dbConfig.RequestTimeout = null.Int32FromPtr(&apiConfig.RequestTimeout)
+	dbConfig.DefaultOpenableDuration = null.Int32FromPtr(&apiConfig.DefaultOpenableDuration)
+	dbConfig.Initialized = null.BoolFromPtr(apiConfig.Initialized)
 	if apiConfig.ProjIds != nil {
 		dbConfig.ProjectIds = *apiConfig.ProjIds
 	}

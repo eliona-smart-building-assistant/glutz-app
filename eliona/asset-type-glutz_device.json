@@ -74,13 +74,12 @@
 		},
         {
 			"enable": true,
-			"name": "openable_duration",
-			"subtype": "info",
+			"name": "openable",
+			"subtype": "output",
 			"translation": {
-				"de": "Öffnungsbare Zeit",
-				"en": "Openable Duration"
+				"de": "Öffnungsbar",
+				"en": "Openable"
 			},
-            "unit": "seconds",
 			"type": "operating-status"
 		}
 	],

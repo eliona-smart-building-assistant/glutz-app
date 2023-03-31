@@ -39,6 +39,12 @@ type Configuration struct {
 	// Interval in seconds for collecting data from endpoint
 	RefreshInterval int32 `json:"refreshInterval,omitempty"`
 
+	// Interval in seconds for setting how long a glutz device should be openable for
+	DefaultOpenableDuration int32 `json:"defaultOpenableDuration,omitempty"`
+
+	// Flag to show whether configuration has been read once by app
+	Initialized *bool `json:"initialized,omitempty"`
+
 	// List of Eliona project ids for which this endpoint should collect data. For each project id all glutz devices are automatically created as an asset in Eliona. The mapping between Eliona is stored as an asset mapping in the glutz app and can be read with the ´DeviceMapping´ endpoint.
 	ProjIds *[]string `json:"projIds,omitempty"`
 }

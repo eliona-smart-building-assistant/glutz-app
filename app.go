@@ -23,8 +23,12 @@ import (
 	"glutz/eliona"
 	"glutz/glutz"
 	nethttp "net/http"
+	"strconv"
 	"time"
+	"fmt"
+	
 
+	api "github.com/eliona-smart-building-assistant/go-eliona-api-client/v2"
 	"github.com/eliona-smart-building-assistant/go-eliona/asset"
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 	"github.com/eliona-smart-building-assistant/go-utils/http"
@@ -40,6 +44,14 @@ type Request struct {
 
 type DeviceParams struct {
 	DeviceID string `json:"deviceid"`
+}
+
+type Duration struct {
+	Duration string `json:"Duration"`
+}
+
+type OutputData struct{
+	Openable float64
 }
 
 func checkConfigandSetActiveState() {
@@ -96,9 +108,8 @@ func checkConfigandSetActiveState() {
 	}
 }
 
-
 func processDevices(config apiserver.Configuration) {
-	Devices, devicelist, err := fetchDevices(config)
+	Devices, devicelist, err := fetchDevicesAndCreateGlutzProperty(config)
 	if err != nil {
 		return
 	}
@@ -118,16 +129,18 @@ func processDevices(config apiserver.Configuration) {
 	}
 }
 
-
-
-
-
-
-func fetchDevices(config apiserver.Configuration) ([]glutz.DeviceDb, *glutz.DeviceGlutz, error) {
+func fetchDevicesAndCreateGlutzProperty(config apiserver.Configuration) ([]glutz.DeviceDb, *glutz.DeviceGlutz, error) {
 	var Devices []glutz.DeviceDb
 	deviceList, err := GetDevices(config)
 	if err != nil {
 		return nil, nil, err
+	}
+	openableDurationSet, err := setAccessPointPropertyOpenableDuration(config)
+	if err != nil {
+		return nil, nil, err
+	}
+	if openableDurationSet {
+		conf.SetConfigInitialisedState(config.ConfigId, true)
 	}
 	for result := range deviceList.Result {
 		deviceid := deviceList.Result[result].Deviceid
@@ -148,7 +161,6 @@ func fetchDevices(config apiserver.Configuration) ([]glutz.DeviceDb, *glutz.Devi
 			AccessPoint:      accessPointId.Result[2],
 			OperatingMode:    deviceStatus.Result[0].OperatingMode,
 			Firmware:         deviceStatus.Result[0].Firmware,
-			OpenableDuration: "",
 		}
 		Devices = append(Devices, Device)
 	}
@@ -205,9 +217,8 @@ func createAssetandMapping(config apiserver.Configuration, projId string, device
 	return confDevice, nil
 }
 
-
 func sendData(Devices []glutz.DeviceDb, device int, confDevice *apiserver.Device) error {
-	err:=eliona.UpsertInputData(Devices[device], confDevice.AssetId)
+	err := eliona.UpsertInputData(Devices[device], confDevice.AssetId)
 	if err != nil {
 		return err
 	}
@@ -217,8 +228,6 @@ func sendData(Devices []glutz.DeviceDb, device int, confDevice *apiserver.Device
 	}
 	return nil
 }
-
-
 
 func GetDevices(config apiserver.Configuration) (*glutz.DeviceGlutz, error) {
 
@@ -242,6 +251,55 @@ func GetDevices(config apiserver.Configuration) (*glutz.DeviceGlutz, error) {
 	}
 	return &deviceList, nil
 }
+
+func setAccessPointPropertyOpenableDuration(config apiserver.Configuration) (bool, error) {
+	req := Request{
+		Jsonrpc: "2.0",
+		ID:      "m",
+		Method:  "eAccess.setAccessPointProperty",
+		Params: []interface{}{
+			"/Properties/Eliona/Openable Duration [s]",
+			"",
+			"0",
+		},
+	}
+	accesspointrequest, err := http.NewPostRequest(config.Url, req)
+	if err != nil {
+		log.Error("devices", "Error with request: %v", err)
+		return false, err
+	}
+	propertyset, err := http.Read[glutz.Properties](accesspointrequest, time.Duration(time.Duration.Seconds(1)), true)
+	if err != nil {
+		log.Error("devices", "Error reading device status: %v", err)
+		return false, err
+	}
+	return propertyset.Result, nil
+}
+
+
+func getAccessPointPropertyOpenableDuration(config apiserver.Configuration, locationid string) (string, error) {
+	req := Request{
+		Jsonrpc: "2.0",
+		ID:      "m",
+		Method:  "eAccess.getAccessPointProperty",
+		Params: []interface{}{
+			"/Properties/Eliona/Openable Duration [s]",
+			locationid,
+		},
+	}
+	accesspointrequest, err := http.NewPostRequest(config.Url, req)
+	if err != nil {
+		log.Error("devices", "Error with request: %v", err)
+		return "", err
+	}
+	propertyget, err := http.Read[glutz.GlutzOpenableDuration](accesspointrequest, time.Duration(time.Duration.Seconds(1)), true)
+	if err != nil {
+		log.Error("devices", "Error reading device status: %v", err)
+		return "", err
+	}
+	return propertyget.Result, nil
+}
+
 
 func GetDeviceStatus(config apiserver.Configuration, device_id string) (*glutz.DeviceStatusGlutz, error) {
 	req := Request{
@@ -287,6 +345,159 @@ func GetLocation(config apiserver.Configuration, accessPointId string) (*glutz.D
 		return nil, err
 	}
 	return &deviceAccessPoint, nil
+}
+
+
+
+
+func checkForOutputChanges() {
+	outputs, err := listenForOutputChanges()
+	if err != nil {
+		return
+	}
+	for output := range outputs {
+		openableDoor, err := checkThereIsADoorToBeOpened(output)
+		if err != nil {
+			return
+		}
+		if openableDoor {
+			device, config, err := getDeviceAndGetConfig(output)
+			if err != nil {
+				return
+			}
+			openableDuration, err:= getOpenableDuration(config, device)
+			if err != nil {
+				return
+			}
+			response, err := sendOpenableDurationToDoor(*config, int(openableDuration), device.LocationId)
+			if err!= nil {
+				log.Error("Output", "Error sending openable duration to door")
+				return
+			}
+			if response{
+				log.Debug("Output", "Opened door at Location %v for %v seconds",device.LocationId, openableDuration)
+			}
+			
+		}
+	}
+}
+
+// Generates a websocket connection to the database and listens for any updates on assets (only output attributes). Returns
+// a channel with all changes
+func listenForOutputChanges() (chan api.Data, error) {
+	conn, err := http.NewWebSocketConnectionWithApiKey(common.Getenv("API_ENDPOINT", "")+"/data-listener?dataSubtype=output", "X-API-Key", common.Getenv("API_TOKEN", ""))
+	if err != nil {
+		log.Error("Output", "Error creating web socket connection")
+		return nil, err
+	}
+	outputs := make(chan api.Data)
+	go http.ListenWebSocket(conn, outputs)
+	return outputs, nil
+}
+
+
+// Checks if the assetid corresponds to a glutz device and that the value written to openable is 1
+func checkThereIsADoorToBeOpened(output api.Data) (bool, error) {
+	DeviceExists, err := conf.ExistGlutzDeviceWithAssetId(context.Background(), output.AssetId)
+	if err != nil {
+		log.Error("Output", "Error checking if asset id corresponds to a glutz device")
+		return false, err
+	}
+	data, err := mapToStruct(output.Data)
+	if err != nil {
+		log.Error("Output", "Error converting map to struct")
+		return false, err
+	}
+	openable := data.Openable
+	if !DeviceExists || openable != 1 {
+		return false, nil
+	}
+	return true, nil
+}
+
+
+
+// Fetch the Glutz device where a value was changed in the database and the configuration
+func getDeviceAndGetConfig(output api.Data) (*apiserver.Device, *apiserver.Configuration, error) {
+	device, err := conf.GetDevicewithAssetId(context.Background(), output.AssetId)
+	if err != nil {
+		log.Error("Output", "Error getting device from assetid %v", err)
+		return nil, nil, err
+	}
+	config, err := conf.GetConfig(context.Background(), int64(device.ConfigId))
+	if err != nil {
+		log.Error("Output", "Error getting configuration %v", err)
+		return nil, nil, err
+	}
+	return device, config, nil
+}
+
+
+// Check if a value exists in glutz environment for openable duration for this door. If so, use this value.
+// If not, use the default value from the config table
+func getOpenableDuration(config *apiserver.Configuration, device *apiserver.Device) (int, error) {
+	glutzOpenableDuration, err := getAccessPointPropertyOpenableDuration(*config, device.LocationId)
+	if err != nil {
+		log.Error("Output", "Error sending openable duration to door")
+		return 0, err
+	}
+	var openableDuration int
+	if glutzOpenableDuration != "" {
+		openableDuration, err = strconv.Atoi(glutzOpenableDuration)
+		if err != nil {
+			log.Error("Output", "Couldn't convert to integer %v", err)
+			return 0, err
+		}
+
+	} else {
+		openableDuration = int(config.DefaultOpenableDuration)
+	}
+	return openableDuration, nil
+}
+
+
+func sendOpenableDurationToDoor(config apiserver.Configuration, openableDuration int, locationid string)(bool, error){
+	durationstring := formatDuration(openableDuration)
+	req := Request{
+		Jsonrpc: "2.0",
+		ID:      "m",
+		Method:  "eAccess.openAccessPoint",
+		Params: []interface{}{
+			locationid,
+			Duration{Duration: durationstring},
+		},
+	}
+	setdurationrequest, err := http.NewPostRequest(config.Url, req)
+	if err != nil {
+		log.Error("devices", "Error with request: %v", err)
+		return false, err
+	}
+	durationset, err := http.Read[glutz.Properties](setdurationrequest, time.Duration(time.Duration.Seconds(1)), true)
+	if err != nil {
+		log.Error("devices", "Error reading device status: %v", err)
+		return false, err
+	}
+	return durationset.Result, nil
+}
+
+func mapToStruct(m map[string]interface{}) (*OutputData, error) {
+    s := &OutputData{}
+
+    if v, ok := m["openable"].(float64); ok {
+        s.Openable = v
+    } else {
+        return nil, fmt.Errorf("invalid type for field 'openable'")
+    }
+
+    return s, nil
+}
+
+func formatDuration(duration int) string {
+    hours := duration / 3600
+    minutes := (duration % 3600) / 60
+    seconds := duration % 60
+
+    return fmt.Sprintf("%02d:%02d:%02d", hours, minutes, seconds)
 }
 
 // listenApi starts the API server and listen for requests
