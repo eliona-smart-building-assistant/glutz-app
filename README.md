@@ -1,6 +1,6 @@
 # Eliona App for Glutz Devices
   
-This [Eliona app for Glutz Devices](https://github.com/eliona-smart-building-assistant/glutz-app) enables the opening and closing of doors fitted with Glutz devices and the data transfer between these devices and the Eliona environment. 
+This [Eliona app for Glutz Devices](https://github.com/eliona-smart-building-assistant/glutz-app) allows the opening and closing of doors fitted with Glutz devices by enabling the data transfer between these devices and the Eliona environment. 
 
 ## Configuration
 
@@ -28,9 +28,9 @@ To start and initialize an app in an Eliona environment, the app has to register
 
 ### Database tables ###
 
-The app requires configuration data that remains in the database. In order to do this, the app creates its own database schema `glutz` during initialization. To modify and handle the configuration data the app provides an API access. Take a look at the [API specification](https://github.com/eliona-smart-building-assistant/glutz-app/blob/develop/openapi.yaml) to see how the configuration tables should be used.
+The app requires configuration data that remains in the database. In order to store the data, the app creates its own database schema `glutz` during initialization. To modify and handle the configuration data the app provides an API access. Take a look at the [API specification](https://github.com/eliona-smart-building-assistant/glutz-app/blob/develop/openapi.yaml) to see how the configuration tables should be used.
 
-- `glutz.config`: contains the Glutz API endpoints. Each row contains the specification of one endpoint(i.e config id, username, password, polling interval etc.)
+- `glutz.config`: contains the Glutz API endpoints. Each row contains the specification of one endpoint (i.e config id, username, password, polling interval etc.)
 
 - `glutz.spaces`: contains the mapping from each device (uniquely defined by its configuration-, project- and device- id) to an eliona asset. Each row contains the specification of one endpoint(i.e config id, username, password, polling interval etc.) The app collects and writes data separately for each configured project. The mapping is created automatically by the app.
 
@@ -59,7 +59,7 @@ Each Glutz device is automatically mapped to an asset with atrributes of the sub
 
 ### Generate API server stub ###
 
-For the API server the [OpenAPI Generator](https://openapi-generator.tech/docs/generators/openapi-yaml) for go-server is used to generate a server stub. The easiest way to generate the server files is to use one of the predefined generation script which use the OpenAPI Generator Docker image.
+For the API server the [OpenAPI Generator](https://openapi-generator.tech/docs/generators/openapi-yaml) for go-server is used to generate a server stub. The easiest way to generate the server files is to use one of the predefined generation scripts, which use the OpenAPI Generator Docker image.
 
 ```
 .\generate-api-server.cmd # Windows
@@ -68,7 +68,7 @@ For the API server the [OpenAPI Generator](https://openapi-generator.tech/docs/g
 
 ### Generate Database access ###
 
-For the database access [SQLBoiler](https://github.com/volatiletech/sqlboiler) is used. The easiest way to generate the database files is to use one of the predefined generation script which use the SQLBoiler implementation. Please note that the database connection in the `sqlboiler.toml` file have to be configured.
+For the database access [SQLBoiler](https://github.com/volatiletech/sqlboiler) is used. The easiest way to generate the database files is to use one of the predefined generation scripts, which use the SQLBoiler implementation. Please note that the database connection in the `sqlboiler.toml` file have to be configured.
 
 ```
 .\generate-db.cmd # Windows
