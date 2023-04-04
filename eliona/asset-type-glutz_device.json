@@ -74,11 +74,21 @@
 		},
         {
 			"enable": true,
-			"name": "openable",
+			"name": "open",
 			"subtype": "output",
 			"translation": {
-				"de": "Öffnungsbar",
-				"en": "Openable"
+				"de": "Öffnen von Eliona aus",
+				"en": "Open from Eliona"
+			},
+			"type": "operating-status"
+		},
+		{
+			"enable": true,
+			"name": "openable",
+			"subtype": "input",
+			"translation": {
+				"de": "Öffnungsbar, gesetzt von Eliona",
+				"en": "Openable set by Eliona"
 			},
 			"type": "operating-status"
 		}

@@ -24,6 +24,10 @@ type deviceInfoDataPayload struct {
 	Firmware         string  `json:"firmware"`
 }
 
+type openableDataPayload struct {
+	Openable 		int32 `json:"openable"`
+}
+
 func UpsertInputData(deviceData glutz.DeviceDb, assetId int32) error{
 	log.Debug("Data", "Uploading input data")
 	deviceInput:= deviceInputDataPayload{
@@ -55,6 +59,19 @@ func UpsertInfoData(deviceData glutz.DeviceDb, assetId int32) error{
 	return nil
 	
 
+}
+
+func UpsertOpenData(openable int32, assetId int32) error{
+	log.Debug("Data", "Uploading open data")
+	deviceOpen:= openableDataPayload{
+		Openable: openable,
+	}
+	err:= upsertData(api.SUBTYPE_INPUT, assetId, deviceOpen)
+	if err!= nil {
+		log.Error("Data", "Error sending input data")
+		return err
+	}
+	return nil
 }
 
 func upsertData(subtype api.DataSubtype, assetId int32, payload any) error {
