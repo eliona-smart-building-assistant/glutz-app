@@ -384,7 +384,7 @@ func checkForOutputChanges() {
 			}
 			if !response {
 				log.Debug("Output", "Could not open door at Location %v for %v seconds",device.LocationId, openableDuration)
-				err:= eliona.UpsertOpenData(3, device.AssetId)
+				err:= eliona.UpsertOpenData(2, device.AssetId)
 				if err != nil{
 					return
 				}
