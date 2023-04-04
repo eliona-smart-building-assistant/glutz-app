@@ -52,7 +52,7 @@ The Glutz app provides its own API to access configuration data and other functi
 
 The app creates necessary asset types and attributes during initialization. See [eliona/asset-type-glutz_device.json](eliona/asset-type-glutz_device.json) for details.
 
-Each Glutz device is automatically mapped to an asset with atrributes of the subtype `Input`, `Info` and `Output`. The Glutz app writes input (e.g battery level, number of openings) and info (e.g building, room, open) data for each Glutz device to the eliona database and reads output data (openable) from Eliona.
+Each Glutz device is automatically mapped to an asset with atrributes of the subtype `Input`, `Info` and `Output`. The Glutz app writes input (e.g battery level, number of openings) and info (e.g building, room, openable) data for each Glutz device to the eliona database and reads output data (open) from Eliona.
 
 
 ## Tools
