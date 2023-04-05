@@ -1,0 +1,36 @@
+{
+    "name": "Glutz Test",
+    "custom": true,
+    "translation": {
+        "de": "Glutz",
+        "en": "Glutz",
+        "fr": "Glutz",
+        "it": "Glutz"
+      },
+    "icon": "widgetMeetingRoom",
+    "withAlarm": true,
+    "withTimespan": true,
+    "elements": [
+        {
+            "id": 53,
+            "category": "input",
+            "sequence": 1,
+            "config": {
+                "description": "",
+                "resetTime": "1",
+                "text": "Open",
+                "type": "pushbutton"
+            }
+        },
+        {
+            "id": 54,
+            "category": "value",
+            "sequence": 2,
+            "config": {
+                "description": "",
+                "text": "Door Status",
+                "variant": "small"
+            }
+        }
+    ]
+}
