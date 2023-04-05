@@ -11,9 +11,9 @@ package apiservices
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"glutz/apiserver"
+	"glutz/eliona"
 )
 
 // CustomizationApiService is a service that implements the logic for the CustomizationApiServicer
@@ -29,25 +29,19 @@ func NewCustomizationApiService() apiserver.CustomizationApiServicer {
 
 // GetDashboardTemplateByName - Get a full dashboard template
 func (s *CustomizationApiService) GetDashboardTemplateByName(ctx context.Context, dashboardTemplateName string, projectId string) (apiserver.ImplResponse, error) {
-	// TODO - update GetDashboardTemplateByName with the required logic for this service method.
-	// Add api_customization_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	//TODO: Uncomment the next line to return response Response(200, Dashboard{}) or use other options such as http.Ok ...
-	//return Response(200, Dashboard{}), nil
-
-	//TODO: Uncomment the next line to return response Response(404, {}) or use other options such as http.Ok ...
-	//return Response(404, nil),nil
-
-	return apiserver.Response(http.StatusNotImplemented, nil), errors.New("GetDashboardTemplateByName method not implemented")
+	if dashboardTemplateName == "Glutz" {
+		dashboard, err := eliona.GlutzDashboard(projectId)
+		if err != nil {
+			return apiserver.ImplResponse{Code: http.StatusInternalServerError}, err
+		}
+		return apiserver.Response(http.StatusOK, dashboard), nil
+	} else {
+		return apiserver.ImplResponse{Code: http.StatusNotFound}, nil
+	}
 }
 
 // GetDashboardTemplateNames - List available dashboard templates
 func (s *CustomizationApiService) GetDashboardTemplateNames(ctx context.Context) (apiserver.ImplResponse, error) {
-	// TODO - update GetDashboardTemplateNames with the required logic for this service method.
-	// Add api_customization_service.go to the .openapi-generator-ignore to avoid overwriting this service implementation when updating open api generation.
-
-	//TODO: Uncomment the next line to return response Response(200, []string{}) or use other options such as http.Ok ...
-	//return Response(200, []string{}), nil
-
-	return apiserver.Response(http.StatusNotImplemented, nil), errors.New("GetDashboardTemplateNames method not implemented")
+	return apiserver.Response(http.StatusOK, []string{"Glutz"}), nil
 }
+
