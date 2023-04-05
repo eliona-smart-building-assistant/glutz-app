@@ -51,7 +51,7 @@ type Duration struct {
 }
 
 type OutputData struct{
-	Openable float64
+	Open float64
 }
 
 func checkConfigandSetActiveState() {
@@ -375,7 +375,19 @@ func checkForOutputChanges() {
 				return
 			}
 			if response{
+				err:= eliona.UpsertOpenData(1, device.AssetId)
+				if err != nil{
+					return
+				}
 				log.Debug("Output", "Opened door at Location %v for %v seconds",device.LocationId, openableDuration)
+				go waitAndResetOpen(int(openableDuration), device.AssetId)
+			}
+			if !response {
+				log.Debug("Output", "Could not open door at Location %v for %v seconds",device.LocationId, openableDuration)
+				err:= eliona.UpsertOpenData(2, device.AssetId)
+				if err != nil{
+					return
+				}
 			}
 			
 		}
@@ -396,7 +408,7 @@ func listenForOutputChanges() (chan api.Data, error) {
 }
 
 
-// Checks if the assetid corresponds to a glutz device and that the value written to openable is 1
+// Checks if the assetid corresponds to a glutz device and that the value written to open is 1
 func checkThereIsADoorToBeOpened(output api.Data) (bool, error) {
 	DeviceExists, err := conf.ExistGlutzDeviceWithAssetId(context.Background(), output.AssetId)
 	if err != nil {
@@ -408,8 +420,8 @@ func checkThereIsADoorToBeOpened(output api.Data) (bool, error) {
 		log.Error("Output", "Error converting map to struct")
 		return false, err
 	}
-	openable := data.Openable
-	if !DeviceExists || openable != 1 {
+	open := data.Open
+	if !DeviceExists || open != 1 {
 		return false, nil
 	}
 	return true, nil
@@ -480,11 +492,19 @@ func sendOpenableDurationToDoor(config apiserver.Configuration, openableDuration
 	return durationset.Result, nil
 }
 
+func waitAndResetOpen(openableDuration int, assetid int32){
+	time.Sleep(time.Second * time.Duration(openableDuration))
+	err:= eliona.UpsertOpenData(0, assetid)
+	if err!= nil {
+		log.Debug("Output", "Error upserting open data v", err)
+	}
+}
+
 func mapToStruct(m map[string]interface{}) (*OutputData, error) {
     s := &OutputData{}
 
-    if v, ok := m["openable"].(float64); ok {
-        s.Openable = v
+    if v, ok := m["open"].(float64); ok {
+        s.Open = v
     } else {
         return nil, fmt.Errorf("invalid type for field 'openable'")
     }
@@ -500,10 +520,12 @@ func formatDuration(duration int) string {
     return fmt.Sprintf("%02d:%02d:%02d", hours, minutes, seconds)
 }
 
-// listenApi starts the API server and listen for requests
-func listenApi() {
-	http.ListenApiWithOs(&nethttp.Server{Addr: ":" + common.Getenv("API_SERVER_PORT", "3000"), Handler: apiserver.NewRouter(
+
+func listenApiRequests() {
+	err := nethttp.ListenAndServe(":"+common.Getenv("API_SERVER_PORT", "3000"), apiserver.NewRouter(
 		apiserver.NewConfigurationApiController(apiservices.NewConfigurationApiService()),
 		apiserver.NewVersionApiController(apiservices.NewVersionApiService()),
-	)})
+		apiserver.NewCustomizationApiController(apiservices.NewCustomizationApiService()),
+	))
+	log.Fatal("main", "Error in API Server: %v", err)
 }

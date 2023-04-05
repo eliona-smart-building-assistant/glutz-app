@@ -48,7 +48,7 @@ func main() {
 
 	common.WaitForWithOs(
 		common.Loop(checkForOutputChanges, time.Second), common.Loop(checkConfigandSetActiveState, time.Second), 
-		listenApi,
+		listenApiRequests,
 	)
 
 	log.Info("main", "Terminate the app.")
