@@ -16,15 +16,17 @@
 package main
 
 import (
+	"glutz/conf"
+	"glutz/eliona"
+	"time"
+
 	"github.com/eliona-smart-building-assistant/go-eliona/app"
 	"github.com/eliona-smart-building-assistant/go-eliona/asset"
+	"github.com/eliona-smart-building-assistant/go-eliona/dashboard"
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 	"github.com/eliona-smart-building-assistant/go-utils/db"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"glutz/conf"
-	"glutz/eliona"
-	"time"
 )
 
 // The main function starts the app by starting all services necessary for this app and waits
@@ -41,10 +43,13 @@ func main() {
 	// Init the app before the first run.
 	app.Init(db.Pool(), app.AppName(),
 		asset.InitAssetTypeFile("eliona/asset-type-glutz_device.json"),
+		dashboard.InitWidgetTypeFile("eliona/widget-type-glutz.json"),
 		app.ExecSqlFile("conf/init.sql"),
 		conf.InitConfiguration,
 		eliona.InitEliona,
 	)
+
+
 
 	common.WaitForWithOs(
 		common.Loop(checkForOutputChanges, time.Second), common.Loop(checkConfigandSetActiveState, time.Second), 
