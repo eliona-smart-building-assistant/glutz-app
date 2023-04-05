@@ -526,6 +526,7 @@ func listenApiRequests() {
 		apiserver.NewConfigurationApiController(apiservices.NewConfigurationApiService()),
 		apiserver.NewVersionApiController(apiservices.NewVersionApiService()),
 		apiserver.NewCustomizationApiController(apiservices.NewCustomizationApiService()),
+		apiserver.NewDevicesApiController(apiservices.NewDevicesApiService()),
 	))
 	log.Fatal("main", "Error in API Server: %v", err)
 }
