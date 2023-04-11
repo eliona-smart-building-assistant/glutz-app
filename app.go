@@ -239,11 +239,13 @@ func GetDevices(config apiserver.Configuration) (*glutz.DeviceGlutz, error) {
 			"Devices",
 		},
 	}
-	devicerequest, err := http.NewPostRequest(config.Url, deviceRequest)
+	devicerequest, err := http.NewPostRequest(config.Url +"/rpc", deviceRequest)
 	if err != nil {
 		log.Error("devices", "Error with request: %v", err)
 		return nil, err
 	}
+	devicerequest.Header.Add("Referer", config.Url)
+	devicerequest.SetBasicAuth(config.Username, config.Password)
 	deviceList, err := http.Read[glutz.DeviceGlutz](devicerequest, time.Duration(time.Duration.Seconds(1)), true)
 	if err != nil {
 		log.Error("devices", "Error reading devices: %v", err)
@@ -263,14 +265,16 @@ func setAccessPointPropertyOpenableDuration(config apiserver.Configuration) (boo
 			"0",
 		},
 	}
-	accesspointrequest, err := http.NewPostRequest(config.Url, req)
+	accesspointrequest, err := http.NewPostRequest(config.Url + "/rpc", req)
 	if err != nil {
 		log.Error("devices", "Error with request: %v", err)
 		return false, err
 	}
+	accesspointrequest.Header.Add("Referer", config.Url)
+	accesspointrequest.SetBasicAuth(config.Username, config.Password)
 	propertyset, err := http.Read[glutz.Properties](accesspointrequest, time.Duration(time.Duration.Seconds(1)), true)
 	if err != nil {
-		log.Error("devices", "Error reading device status: %v", err)
+		log.Error("devices", "Error setting access point property: %v", err)
 		return false, err
 	}
 	return propertyset.Result, nil
@@ -287,11 +291,13 @@ func getAccessPointPropertyOpenableDuration(config apiserver.Configuration, loca
 			locationid,
 		},
 	}
-	accesspointrequest, err := http.NewPostRequest(config.Url, req)
+	accesspointrequest, err := http.NewPostRequest(config.Url + "/rpc", req)
 	if err != nil {
 		log.Error("devices", "Error with request: %v", err)
 		return "", err
 	}
+	accesspointrequest.Header.Add("Referer", config.Url)
+	accesspointrequest.SetBasicAuth(config.Username, config.Password)
 	propertyget, err := http.Read[glutz.GlutzOpenableDuration](accesspointrequest, time.Duration(time.Duration.Seconds(1)), true)
 	if err != nil {
 		log.Error("devices", "Error reading device status: %v", err)
@@ -311,11 +317,13 @@ func GetDeviceStatus(config apiserver.Configuration, device_id string) (*glutz.D
 			DeviceParams{DeviceID: device_id},
 		},
 	}
-	devicestatusrequest, err := http.NewPostRequest(config.Url, req)
+	devicestatusrequest, err := http.NewPostRequest(config.Url + "/rpc", req)
 	if err != nil {
 		log.Error("devices", "Error with request: %v", err)
 		return nil, err
 	}
+	devicestatusrequest.Header.Add("Referer", config.Url)
+	devicestatusrequest.SetBasicAuth(config.Username, config.Password)
 	deviceStatus, err := http.Read[glutz.DeviceStatusGlutz](devicestatusrequest, time.Duration(time.Duration.Seconds(1)), true)
 	if err != nil {
 		log.Error("devices", "Error reading device status: %v", err)
@@ -334,11 +342,13 @@ func GetLocation(config apiserver.Configuration, accessPointId string) (*glutz.D
 			accessPointId,
 		},
 	}
-	deviceaccesspointrequest, err := http.NewPostRequest(config.Url, req)
+	deviceaccesspointrequest, err := http.NewPostRequest(config.Url + "/rpc", req)
 	if err != nil {
 		log.Error("devices", "Error with request: %v", err)
 		return nil, err
 	}
+	deviceaccesspointrequest.Header.Add("Referer", config.Url)
+	deviceaccesspointrequest.SetBasicAuth(config.Username, config.Password)
 	deviceAccessPoint, err := http.Read[glutz.DeviceAccessPointGlutz](deviceaccesspointrequest, time.Duration(time.Duration.Seconds(1)), true)
 	if err != nil {
 		log.Error("devices", "Error reading device access point: %v", err)
@@ -479,11 +489,13 @@ func sendOpenableDurationToDoor(config apiserver.Configuration, openableDuration
 			Duration{Duration: durationstring},
 		},
 	}
-	setdurationrequest, err := http.NewPostRequest(config.Url, req)
+	setdurationrequest, err := http.NewPostRequest(config.Url + "/rpc", req)
 	if err != nil {
 		log.Error("devices", "Error with request: %v", err)
 		return false, err
 	}
+	setdurationrequest.Header.Add("Referer", config.Url)
+	setdurationrequest.SetBasicAuth(config.Username, config.Password)
 	durationset, err := http.Read[glutz.Properties](setdurationrequest, time.Duration(time.Duration.Seconds(1)), true)
 	if err != nil {
 		log.Error("devices", "Error reading device status: %v", err)
