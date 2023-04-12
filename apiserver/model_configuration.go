@@ -21,9 +21,6 @@ type Configuration struct {
 	// Password for login
 	Password string `json:"password,omitempty"`
 
-	// Token for API.
-	ApiToken string `json:"apiToken,omitempty"`
-
 	// url for glutz endpoint
 	Url string `json:"url,omitempty"`
 

@@ -20,7 +20,6 @@ create table if not exists glutz.config
     config_id           bigserial primary key,
     username            text not null,
     password            text not null,
-    api_token           text not null,
     url                 text not null,
     active              boolean default false,
     enable              boolean default false,

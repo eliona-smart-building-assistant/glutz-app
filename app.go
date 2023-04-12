@@ -76,7 +76,6 @@ func checkConfigandSetActiveState() {
 			log.Info("conf", "Collecting initialized with Configuration %d:\n"+
 				"Username: %s\n"+
 				"Password: %s\n"+
-				"API Token: %s\n"+
 				"Active: %t\n"+
 				"Enable: %t\n"+
 				"Refresh Interval: %d\n"+
@@ -85,7 +84,6 @@ func checkConfigandSetActiveState() {
 				config.ConfigId,
 				config.Username,
 				config.Password,
-				config.ApiToken,
 				*config.Active,
 				*config.Enable,
 				config.RequestTimeout,
