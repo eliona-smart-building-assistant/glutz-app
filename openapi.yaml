@@ -264,11 +264,6 @@ components:
           description: Password for login
           readOnly: true
           nullable: false
-        apiToken:
-          type: string
-          description: Token for API.
-          readOnly: true
-          nullable: false
         url:
           type: string
           description: url for glutz endpoint

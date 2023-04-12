@@ -197,7 +197,6 @@ func apiConfigFromDbConfig(dbConfig *dbglutz.Config) *apiserver.Configuration {
 	apiConfig.ConfigId = dbConfig.ConfigID
 	apiConfig.Username = dbConfig.Username
 	apiConfig.Password = dbConfig.Password
-	apiConfig.ApiToken = dbConfig.APIToken
 	apiConfig.Url = dbConfig.URL
 	apiConfig.Active = &dbConfig.Active.Bool
 	apiConfig.Enable = &dbConfig.Enable.Bool
@@ -214,7 +213,6 @@ func dbConfigFromApiConfig(apiConfig *apiserver.Configuration) *dbglutz.Config {
 	dbConfig.ConfigID = null.Int64FromPtr(&apiConfig.ConfigId).Int64
 	dbConfig.Username = apiConfig.Username
 	dbConfig.Password = apiConfig.Password
-	dbConfig.APIToken = apiConfig.ApiToken
 	dbConfig.URL = apiConfig.Url
 	dbConfig.Active = null.BoolFromPtr(apiConfig.Active)
 	dbConfig.Enable = null.BoolFromPtr(apiConfig.Enable)
