@@ -174,6 +174,7 @@ func getOrCreateMapping(config apiserver.Configuration, projId string, devicelis
 	locationid := devicelist.Result[device].AccessPointId
 	if confDevice == nil {
 		confDevice, err = createAssetandMapping(config, projId, devicelist.Result[device].Deviceid, assetname, locationid)
+
 		if err != nil {
 			log.Debug("devices", "Error creating asset and mapping")
 			return nil, err
@@ -412,12 +413,36 @@ func checkThereIsADoorToBeOpened(output api.Data) (bool, error) {
 		return false, err
 	}
 	open := data.Open
-	if !DeviceExists || open != 1 {
+	doorAlreadyOpen, err := checkDoorIfDoorIsAlreadyOpen(output.AssetId)
+	if err != nil {
+		log.Error("Output", "Error checking whether door is already open")
+		return false, err
+	}
+	if !DeviceExists || open != 1 || doorAlreadyOpen {
 		return false, nil
 	}
 	return true, nil
 }
 
+func checkDoorIfDoorIsAlreadyOpen(assetid int32)(bool, error){
+	request, err := http.NewRequestWithApiKey(common.Getenv("API_ENDPOINT", "")+"/data?assetId="+strconv.Itoa(int(assetid))+"&dataSubtype=input", "X-API-KEY", common.Getenv("API_TOKEN", ""))
+	if err != nil {
+		log.Error("Output", "Error with request: %v", err)
+		return false, err
+	}
+	asset_data, err := http.Read[glutz.AssetData](request, time.Duration(time.Duration.Seconds(1)), true)
+	if err != nil {
+		log.Error("Output", "Error reading asset data: %v", err)
+		return false, err
+	}
+	if asset_data[0].Data.Openable == 1{
+		log.Debug("Output", "Door is already open")
+		return true, nil
+	}else{
+		return false, nil
+	}
+
+}
 
 
 // Fetch the Glutz device where a value was changed in the database and the configuration
@@ -487,10 +512,12 @@ func sendOpenableDurationToDoor(config apiserver.Configuration, openableDuration
 
 func waitAndResetOpen(config apiserver.Configuration, openableDuration int, assetid int32, locationid string){
 	time.Sleep(time.Second * time.Duration(openableDuration))
-	//
+	// Here we close the door again automatically after the length of time "openable duration" as it seems
+	// the Glutz API doesn't take the time into account.
 	response, _ :=sendOpenableDurationToDoor(config, 0, locationid)
 	if response {
 		eliona.UpsertOpenData(0, assetid)
+		log.Debug("Output", "Closed door at Location %v again", locationid)
 		
 	}else{
 		eliona.UpsertOpenData(2, assetid)

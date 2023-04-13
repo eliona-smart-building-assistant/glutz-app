@@ -1,5 +1,7 @@
 package glutz
 
+import "time"
+
 type DevicesDb map[string]DeviceDb
 
 type DeviceDb struct {
@@ -65,4 +67,16 @@ type GlutzOpenableDuration struct {
 	Id      string `json:"id"`
 	Jsonrpc string `json:"jsonrpc"`
 	Result  string `json:"result"`
+}
+
+type AssetData []struct {
+	AssetID   int       `json:"assetId"`
+	Subtype   string    `json:"subtype"`
+	Timestamp time.Time `json:"timestamp"`
+	Data      struct {
+		BatteryLevel int `json:"batteryLevel"`
+		Openable     int `json:"openable"`
+		Openings     int `json:"openings"`
+	} `json:"data"`
+	AssetTypeName string `json:"assetTypeName"`
 }
