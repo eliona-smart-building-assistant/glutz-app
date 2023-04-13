@@ -358,61 +358,44 @@ func GetLocation(config apiserver.Configuration, accessPointId string) (*glutz.D
 
 
 
-func checkForOutputChanges() {
-	outputs, err := listenForOutputChanges()
-	if err != nil {
-		return
-	}
-	for output := range outputs {
-		openableDoor, err := checkThereIsADoorToBeOpened(output)
-		if err != nil {
-			return
-		}
-		if openableDoor {
-			device, config, err := getDeviceAndGetConfig(output)
-			if err != nil {
-				return
-			}
-			openableDuration, err:= getOpenableDuration(config, device)
-			if err != nil {
-				return
-			}
-			response, err := sendOpenableDurationToDoor(*config, int(openableDuration), device.LocationId)
-			if err!= nil {
-				log.Error("Output", "Error sending openable duration to door")
-				return
-			}
-			if response{
-				err:= eliona.UpsertOpenData(1, device.AssetId)
-				if err != nil{
-					return
-				}
-				log.Debug("Output", "Opened door at Location %v for %v seconds",device.LocationId, openableDuration)
-				go waitAndResetOpen(int(openableDuration), device.AssetId)
-			}
-			if !response {
-				log.Debug("Output", "Could not open door at Location %v for %v seconds",device.LocationId, openableDuration)
-				err:= eliona.UpsertOpenData(2, device.AssetId)
-				if err != nil{
-					return
-				}
-			}
-			
-		}
-	}
-}
 
 // Generates a websocket connection to the database and listens for any updates on assets (only output attributes). Returns
 // a channel with all changes
-func listenForOutputChanges() (chan api.Data, error) {
+func listenForOutputChanges()  {
 	conn, err := http.NewWebSocketConnectionWithApiKey(common.Getenv("API_ENDPOINT", "")+"/data-listener?dataSubtype=output", "X-API-Key", common.Getenv("API_TOKEN", ""))
 	if err != nil {
-		log.Error("Output", "Error creating web socket connection")
-		return nil, err
+		log.Fatal("Output", "Error creating web socket connection")
+		return
 	}
 	outputs := make(chan api.Data)
 	go http.ListenWebSocket(conn, outputs)
-	return outputs, nil
+	for output := range outputs{
+		openableDoor, _ := checkThereIsADoorToBeOpened(output)
+		if openableDoor {
+			device, config, _ := getDeviceAndGetConfig(output)
+			if device != nil && config != nil {
+				openableDuration, _:= getOpenableDuration(config, device)
+				if openableDuration > 0{
+					response, _ := sendOpenableDurationToDoor(*config, int(openableDuration), device.LocationId)
+					if response{
+						err:= eliona.UpsertOpenData(1, device.AssetId)
+						if err != nil{
+							return
+						}
+						log.Debug("Output", "Opened door at Location %v for %v seconds",device.LocationId, openableDuration)
+						go waitAndResetOpen(*config, int(openableDuration), device.AssetId, device.LocationId)
+					}
+					if !response {
+						log.Debug("Output", "Could not open door at Location %v for %v seconds",device.LocationId, openableDuration)
+						err:= eliona.UpsertOpenData(2, device.AssetId)
+						if err != nil{
+							return
+						}
+					}
+				}	
+			}			
+		}		
+	}
 }
 
 
@@ -502,11 +485,15 @@ func sendOpenableDurationToDoor(config apiserver.Configuration, openableDuration
 	return durationset.Result, nil
 }
 
-func waitAndResetOpen(openableDuration int, assetid int32){
+func waitAndResetOpen(config apiserver.Configuration, openableDuration int, assetid int32, locationid string){
 	time.Sleep(time.Second * time.Duration(openableDuration))
-	err:= eliona.UpsertOpenData(0, assetid)
-	if err!= nil {
-		log.Debug("Output", "Error upserting open data v", err)
+	//
+	response, _ :=sendOpenableDurationToDoor(config, 0, locationid)
+	if response {
+		eliona.UpsertOpenData(0, assetid)
+		
+	}else{
+		eliona.UpsertOpenData(2, assetid)
 	}
 }
 
