@@ -17,6 +17,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"glutz/apiserver"
 	"glutz/apiservices"
 	"glutz/conf"
@@ -25,14 +26,13 @@ import (
 	nethttp "net/http"
 	"strconv"
 	"time"
-	"fmt"
-	
 
 	api "github.com/eliona-smart-building-assistant/go-eliona-api-client/v2"
 	"github.com/eliona-smart-building-assistant/go-eliona/asset"
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 	"github.com/eliona-smart-building-assistant/go-utils/http"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
+	"github.com/gorilla/websocket"
 )
 
 type Request struct {
@@ -363,13 +363,10 @@ func GetLocation(config apiserver.Configuration, accessPointId string) (*glutz.D
 // Generates a websocket connection to the database and listens for any updates on assets (only output attributes). Returns
 // a channel with all changes
 func listenForOutputChanges()  {
-	conn, err := http.NewWebSocketConnectionWithApiKey(common.Getenv("API_ENDPOINT", "")+"/data-listener?dataSubtype=output", "X-API-Key", common.Getenv("API_TOKEN", ""))
-	if err != nil {
-		log.Fatal("Output", "Error creating web socket connection")
-		return
-	}
 	outputs := make(chan api.Data)
-	go http.ListenWebSocket(conn, outputs)
+	go http.ListenWebSocketWithReconnect(func()(*websocket.Conn,error){
+		return http.NewWebSocketConnectionWithApiKey(common.Getenv("API_ENDPOINT", "")+"/data-listener?dataSubtype=output", "X-API-Key", common.Getenv("API_TOKEN", ""))
+	}, 50*time.Millisecond, outputs)
 	for output := range outputs{
 		openableDoor, _ := checkThereIsADoorToBeOpened(output)
 		if openableDoor {
