@@ -216,6 +216,7 @@ func createAssetandMapping(config apiserver.Configuration, projId string, device
 	return confDevice, nil
 }
 
+// Upserts Input and Info Data to Eliona
 func sendData(Devices []glutz.DeviceDb, device int, confDevice *apiserver.Device) error {
 	err := eliona.UpsertInputData(Devices[device], confDevice.AssetId)
 	if err != nil {
@@ -228,6 +229,7 @@ func sendData(Devices []glutz.DeviceDb, device int, confDevice *apiserver.Device
 	return nil
 }
 
+// Glutz API request to get all devices in configuration
 func GetDevices(config apiserver.Configuration) (*glutz.DeviceGlutz, error) {
 
 	deviceRequest := Request{
@@ -253,6 +255,7 @@ func GetDevices(config apiserver.Configuration) (*glutz.DeviceGlutz, error) {
 	return &deviceList, nil
 }
 
+// Glutz API request to initialize the access point property "openable duration" on the Glutz server
 func setAccessPointPropertyOpenableDuration(config apiserver.Configuration) (bool, error) {
 	req := Request{
 		Jsonrpc: "2.0",
@@ -279,7 +282,7 @@ func setAccessPointPropertyOpenableDuration(config apiserver.Configuration) (boo
 	return propertyset.Result, nil
 }
 
-
+// Glutz API request to get the value of the accesspoint property "openable duration" from the Glutz server
 func getAccessPointPropertyOpenableDuration(config apiserver.Configuration, locationid string) (string, error) {
 	req := Request{
 		Jsonrpc: "2.0",
@@ -305,7 +308,7 @@ func getAccessPointPropertyOpenableDuration(config apiserver.Configuration, loca
 	return propertyget.Result, nil
 }
 
-
+// Glutz API request to get device status of a specific Glutz device
 func GetDeviceStatus(config apiserver.Configuration, device_id string) (*glutz.DeviceStatusGlutz, error) {
 	req := Request{
 		Jsonrpc: "2.0",
@@ -331,6 +334,7 @@ func GetDeviceStatus(config apiserver.Configuration, device_id string) (*glutz.D
 	return &deviceStatus, nil
 }
 
+// Glutz API request to get device status of a specific Glutz device
 func GetLocation(config apiserver.Configuration, accessPointId string) (*glutz.DeviceAccessPointGlutz, error) {
 	req := Request{
 		Jsonrpc: "2.0",
@@ -360,8 +364,9 @@ func GetLocation(config apiserver.Configuration, accessPointId string) (*glutz.D
 
 
 
-// Generates a websocket connection to the database and listens for any updates on assets (only output attributes). Returns
-// a channel with all changes
+// Generates a websocket connection to the database and listens for any updates on assets (only output attributes). For any update written to the channel
+// the function checks whether the assetid of the update is associated with a glutz device and opens it. After the "openable duration" time is up, the door
+// is closed again. If the door is currently open, a request to open it again will be ignored. 
 func listenForOutputChanges()  {
 	outputs := make(chan api.Data)
 	go http.ListenWebSocketWithReconnect(func()(*websocket.Conn,error){
@@ -421,6 +426,7 @@ func checkThereIsADoorToBeOpened(output api.Data) (bool, error) {
 	return true, nil
 }
 
+// Checks if a door is opened by reading the "openable" attribute for the asset with the given assetid.
 func checkDoorIfDoorIsAlreadyOpen(assetid int32)(bool, error){
 	request, err := http.NewRequestWithApiKey(common.Getenv("API_ENDPOINT", "")+"/data?assetId="+strconv.Itoa(int(assetid))+"&dataSubtype=input", "X-API-KEY", common.Getenv("API_TOKEN", ""))
 	if err != nil {
@@ -442,7 +448,7 @@ func checkDoorIfDoorIsAlreadyOpen(assetid int32)(bool, error){
 }
 
 
-// Fetch the Glutz device where a value was changed in the database and the configuration
+// Fetches the Glutz device where a value was changed in the database and the configuration
 func getDeviceAndGetConfig(output api.Data) (*apiserver.Device, *apiserver.Configuration, error) {
 	device, err := conf.GetDevicewithAssetId(context.Background(), output.AssetId)
 	if err != nil {
@@ -480,7 +486,7 @@ func getOpenableDuration(config *apiserver.Configuration, device *apiserver.Devi
 	return openableDuration, nil
 }
 
-
+// Opens/closes the door. Openable Duration isn't considered in the current Glutz API implementation
 func sendOpenableDurationToDoor(config apiserver.Configuration, openableDuration int, locationid string)(bool, error){
 	durationstring := formatDuration(openableDuration)
 	req := Request{
@@ -507,6 +513,8 @@ func sendOpenableDurationToDoor(config apiserver.Configuration, openableDuration
 	return durationset.Result, nil
 }
 
+
+// Waits until the time is ready to close door again. Then closes door.
 func waitAndResetOpen(config apiserver.Configuration, openableDuration int, assetid int32, locationid string){
 	time.Sleep(time.Second * time.Duration(openableDuration))
 	// Here we close the door again automatically after the length of time "openable duration" as it seems
