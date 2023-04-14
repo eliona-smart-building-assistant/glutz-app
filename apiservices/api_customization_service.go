@@ -40,8 +40,5 @@ func (s *CustomizationApiService) GetDashboardTemplateByName(ctx context.Context
 	}
 }
 
-// GetDashboardTemplateNames - List available dashboard templates
-func (s *CustomizationApiService) GetDashboardTemplateNames(ctx context.Context) (apiserver.ImplResponse, error) {
-	return apiserver.Response(http.StatusOK, []string{"Glutz"}), nil
-}
+
 
