@@ -30,7 +30,6 @@ type ConfigurationApiRouter interface {
 // pass the data to a CustomizationApiServicer to perform the required actions, then write the service results to the http response.
 type CustomizationApiRouter interface {
 	GetDashboardTemplateByName(http.ResponseWriter, *http.Request)
-	GetDashboardTemplateNames(http.ResponseWriter, *http.Request)
 }
 
 // DevicesApiRouter defines the required methods for binding the api requests to a responses for the DevicesApi
@@ -66,7 +65,6 @@ type ConfigurationApiServicer interface {
 // and updated with the logic required for the API.
 type CustomizationApiServicer interface {
 	GetDashboardTemplateByName(context.Context, string, string) (ImplResponse, error)
-	GetDashboardTemplateNames(context.Context) (ImplResponse, error)
 }
 
 // DevicesApiServicer defines the api actions for the DevicesApi service

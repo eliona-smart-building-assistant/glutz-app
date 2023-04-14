@@ -9,6 +9,9 @@
     "en": "The Glutz App allows Glutz devices to communicate with Eliona.",
     "de": "Die Glutz App erlaubt die Kommunikation zwischen Glutz Geräte und Eliona."
   },
+  "dashboardTemplateNames": [
+    "Glutz"
+  ],
   "documentationUrl": "https://doc.eliona.io/eliona/referenzen/app-entwicklung",
   "useEnvironment": [ "CONNECTION_STRING", "API_ENDPOINT", "API_TOKEN" ]
 }

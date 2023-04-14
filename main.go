@@ -48,11 +48,10 @@ func main() {
 		conf.InitConfiguration,
 		eliona.InitEliona,
 	)
-
-
-
+	
 	common.WaitForWithOs(
-		common.Loop(checkForOutputChanges, time.Second), common.Loop(checkConfigandSetActiveState, time.Second), 
+		common.Loop(checkConfigandSetActiveState, time.Second), 
+		listenForOutputChanges,  
 		listenApiRequests,
 	)
 
