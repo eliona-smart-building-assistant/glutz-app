@@ -27,23 +27,23 @@ DELETE FROM public.heap
 WHERE asset_id IN (
 	SELECT asset_id
 	FROM public.asset
-	WHERE asset_type LIKE 'glutz_%' ESCAPE '\'
+	WHERE asset_type LIKE E'glutz\\_%'
 );
 
 DELETE FROM public.attribute_schema
-WHERE asset_type LIKE 'glutz_%' ESCAPE '\';
+WHERE asset_type LIKE E'glutz\\_%';
 
 DELETE FROM public.asset
-WHERE asset_type LIKE 'glutz_%' ESCAPE '\';
+WHERE asset_type LIKE E'glutz\\_%';
 
 DELETE FROM public.asset_type
-WHERE asset_type LIKE 'glutz_%' ESCAPE '\';
+WHERE asset_type LIKE E'glutz\\_%';
 
 DELETE FROM public.widget_data
 WHERE widget_id IN (
     SELECT public.widget.id
     FROM public.widget JOIN public.dashboard USING (dashboard_id)
-    WHERE public.dashboard.name LIKE 'glutz%' ESCAPE '\'
+    WHERE public.dashboard.name LIKE E'glutz\\_%'
 );
 
 DELETE FROM public.widget
