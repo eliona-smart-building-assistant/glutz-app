@@ -73,22 +73,7 @@ func checkConfigandSetActiveState() {
 		// Signals that this config is active
 		if !conf.IsConfigActive(config) {
 			conf.SetConfigActiveState(config.ConfigId, true)
-			log.Info("conf", "Collecting initialized with Configuration %d:\n"+
-				"Username: %s\n"+
-				"Password: %s\n"+
-				"Active: %t\n"+
-				"Enable: %t\n"+
-				"Refresh Interval: %d\n"+
-				"Request Timeout: %d\n"+
-				"Project IDs: %v\n",
-				config.ConfigId,
-				config.Username,
-				config.Password,
-				*config.Active,
-				*config.Enable,
-				config.RequestTimeout,
-				config.RefreshInterval,
-				*config.ProjIds)
+			log.Info("conf", "Collecting initialized with Configuration %d", config.ConfigId)
 		}
 
 		// Runs the ReadNode. If the current node is currently running, skip the execution
