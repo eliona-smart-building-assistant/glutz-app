@@ -90,7 +90,21 @@
 				"de": "Öffnungsbar, gesetzt von Eliona",
 				"en": "Openable set by Eliona"
 			},
-			"type": "operating-status"
+			"type": "operating-status",
+			"map" : [
+				{
+					"value": 0,
+					"map": "Locked"
+				},
+				{
+					"value": 1,
+					"map": "Openable"
+				},
+				{
+					"value": 2,
+					"map": "Error"
+				}
+			]
 		}
 	],
 	"custom": true,
