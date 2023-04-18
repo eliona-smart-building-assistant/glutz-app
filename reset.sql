@@ -17,8 +17,8 @@
 -- The only thing that remains after testing then are the incremented auto-increment values and app
 -- registration (which you can optionally remove as well by uncommenting the last command).
 
-INSERT INTO public.eliona_app (app_name, category, enable)
-VALUES ('glutz', 'app', 't')
+INSERT INTO public.eliona_app (app_name, enable)
+VALUES ('glutz','t')
 ON CONFLICT (app_name) DO UPDATE SET initialized_at = null;
 
 DROP SCHEMA IF EXISTS glutz CASCADE;
