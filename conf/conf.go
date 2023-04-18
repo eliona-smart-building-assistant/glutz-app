@@ -28,7 +28,7 @@ import (
 )
 
 func GetDevices(ctx context.Context, configId int64) ([]apiserver.Device, error) {
-	var mods []qm.QueryMod 
+	var mods []qm.QueryMod
 	if configId > 0 {
 		mods = append(mods, dbglutz.DeviceWhere.ConfigID.EQ(configId))
 	}
@@ -43,10 +43,10 @@ func GetDevices(ctx context.Context, configId int64) ([]apiserver.Device, error)
 	return apiDevices, nil
 }
 
-func ExistGlutzDeviceWithAssetId(ctx context.Context, assetId int32)(bool, error){
+func ExistGlutzDeviceWithAssetId(ctx context.Context, assetId int32) (bool, error) {
 	var mods []qm.QueryMod
 	mods = append(mods, dbglutz.DeviceWhere.AssetID.EQ(assetId))
-	device, err := dbglutz.Devices(mods...).All(ctx, db.Database("glutz")) 
+	device, err := dbglutz.Devices(mods...).All(ctx, db.Database("glutz"))
 	if err != nil {
 		return false, err
 	}
@@ -55,40 +55,39 @@ func ExistGlutzDeviceWithAssetId(ctx context.Context, assetId int32)(bool, error
 	}
 	if len(device) == 1 {
 		return true, nil
-	} 
+	}
 	return false, err
 }
 
-func GetDevicewithAssetId(ctx context.Context, assetId int32)(*apiserver.Device, error){
+func GetDevicewithAssetId(ctx context.Context, assetId int32) (*apiserver.Device, error) {
 	var mods []qm.QueryMod
 	mods = append(mods, dbglutz.DeviceWhere.AssetID.EQ(assetId))
-	device, err := dbglutz.Devices(mods...).All(ctx, db.Database("glutz")) 
+	device, err := dbglutz.Devices(mods...).All(ctx, db.Database("glutz"))
 	if err != nil {
 		return nil, err
 	}
-	if len(device)!= 1 {
+	if len(device) != 1 {
 		return nil, nil
 	}
 	return apiDevicesFromDbDevices(device[0]), nil
 }
 
 func GetDevice(ctx context.Context, configId int64, projectId string, deviceId string) (*apiserver.Device, error) {
-	var mods []qm.QueryMod 
+	var mods []qm.QueryMod
 	if configId > 0 {
 		mods = append(mods, dbglutz.DeviceWhere.ConfigID.EQ(configId))
 		mods = append(mods, dbglutz.DeviceWhere.ProjectID.EQ(projectId))
 		mods = append(mods, dbglutz.DeviceWhere.DeviceID.EQ(deviceId))
 	}
-	dbDevices, err := dbglutz.Devices(mods...).All(ctx, db.Database("glutz")) 
+	dbDevices, err := dbglutz.Devices(mods...).All(ctx, db.Database("glutz"))
 	if err != nil {
 		return nil, err
 	}
-	if len(dbDevices)!= 1 {
+	if len(dbDevices) != 1 {
 		return nil, nil
 	}
 	return apiDevicesFromDbDevices(dbDevices[0]), nil
 }
-
 
 func DeleteConfig(ctx context.Context, configId int64) (int64, error) {
 	return dbglutz.Configs(dbglutz.ConfigWhere.ConfigID.EQ(configId)).DeleteAll(ctx, db.Database("glutz"))
@@ -179,8 +178,6 @@ func SetAllConfigsInactive(ctx context.Context) (int64, error) {
 	})
 }
 
-
-
 ///// API to DB Mappings //////
 
 func apiDevicesFromDbDevices(dbDevices *dbglutz.Device) *apiserver.Device {
@@ -225,4 +222,3 @@ func dbConfigFromApiConfig(apiConfig *apiserver.Configuration) *dbglutz.Config {
 	}
 	return &dbConfig
 }
-

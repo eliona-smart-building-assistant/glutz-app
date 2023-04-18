@@ -13,10 +13,10 @@ import (
 	"context"
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
-	"net/http"
-	"os"
 	"glutz/apiserver"
 	"gopkg.in/yaml.v3"
+	"net/http"
+	"os"
 )
 
 // VersionApiService is a service that implements the logic for the VersionApiServicer

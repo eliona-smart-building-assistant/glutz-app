@@ -11,9 +11,9 @@ package apiservices
 
 import (
 	"context"
-	"net/http"
 	"glutz/apiserver"
 	"glutz/eliona"
+	"net/http"
 )
 
 // CustomizationApiService is a service that implements the logic for the CustomizationApiServicer
@@ -39,6 +39,3 @@ func (s *CustomizationApiService) GetDashboardTemplateByName(ctx context.Context
 		return apiserver.ImplResponse{Code: http.StatusNotFound}, nil
 	}
 }
-
-
-

@@ -11,9 +11,9 @@ package apiservices
 
 import (
 	"context"
-	"net/http"
 	"glutz/apiserver"
 	"glutz/conf"
+	"net/http"
 )
 
 // DevicesApiService is a service that implements the logic for the DevicesApiServicer

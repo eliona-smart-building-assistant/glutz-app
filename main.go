@@ -16,8 +16,6 @@
 package main
 
 import (
-	"glutz/conf"
-	"glutz/eliona"
 	"time"
 
 	"github.com/eliona-smart-building-assistant/go-eliona/app"
@@ -45,13 +43,11 @@ func main() {
 		asset.InitAssetTypeFile("eliona/asset-type-glutz_device.json"),
 		dashboard.InitWidgetTypeFile("eliona/widget-type-glutz.json"),
 		app.ExecSqlFile("conf/init.sql"),
-		conf.InitConfiguration,
-		eliona.InitEliona,
 	)
-	
+
 	common.WaitForWithOs(
-		common.Loop(checkConfigandSetActiveState, time.Second), 
-		listenForOutputChanges,  
+		common.Loop(checkConfigandSetActiveState, time.Second),
+		listenForOutputChanges,
 		listenApiRequests,
 	)
 
