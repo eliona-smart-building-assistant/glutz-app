@@ -12,6 +12,6 @@
   "dashboardTemplateNames": [
     "Glutz"
   ],
-  "documentationUrl": "https://doc.eliona.io/eliona/referenzen/app-entwicklung",
+  "apiSpecificationPath": "/v1/version/openapi.json",
   "useEnvironment": [ "CONNECTION_STRING", "API_ENDPOINT", "API_TOKEN" ]
 }
