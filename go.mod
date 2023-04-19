@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/eliona-smart-building-assistant/go-eliona v1.9.3
 	github.com/eliona-smart-building-assistant/go-eliona-api-client/v2 v2.4.14
-	github.com/eliona-smart-building-assistant/go-utils v1.0.21-0.20230417120458-1d592a7e94b9
+	github.com/eliona-smart-building-assistant/go-utils v1.0.21
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.5.0
@@ -36,9 +36,6 @@ require (
 	github.com/volatiletech/inflect v0.0.1 // indirect
 	github.com/volatiletech/randomize v0.0.1 // indirect
 	golang.org/x/crypto v0.0.0-20220826181053-bd7e27e6170d // indirect
-	golang.org/x/mod v0.10.0 // indirect
-	golang.org/x/sys v0.7.0 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/tools v0.8.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
 )
