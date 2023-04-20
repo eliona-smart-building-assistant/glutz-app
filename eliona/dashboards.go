@@ -24,7 +24,7 @@ func GlutzDashboard(projectId string) (api.Dashboard, error) {
 
 	for _, asset := range assets {
 		widget := api.Widget{
-			WidgetTypeName: "Glutz Test",
+			WidgetTypeName: "glutz",
 			AssetId:        asset.Id,
 			Details: map[string]interface{}{
 				"size":     1,

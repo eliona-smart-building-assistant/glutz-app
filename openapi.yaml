@@ -161,7 +161,7 @@ paths:
           required: true
           schema:
             type: string
-            example: Thingdust
+            example: Glutz
         - name: projectId
           in: query
           description: Define the project the dashboard should be
