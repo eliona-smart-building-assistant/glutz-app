@@ -94,15 +94,15 @@
 			"map" : [
 				{
 					"value": 0,
-					"map": "Locked"
+					"text": "Locked"
 				},
 				{
 					"value": 1,
-					"map": "Openable"
+					"text": "Openable"
 				},
 				{
 					"value": 2,
-					"map": "Error"
+					"text": "Error"
 				}
 			]
 		}

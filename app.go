@@ -18,6 +18,7 @@ package main
 import (
 	"context"
 	"fmt"
+	utilshttp "github.com/eliona-smart-building-assistant/go-utils/http"
 	"glutz/apiserver"
 	"glutz/apiservices"
 	"glutz/conf"
@@ -527,11 +528,12 @@ func formatDuration(duration int) string {
 }
 
 func listenApiRequests() {
-	err := nethttp.ListenAndServe(":"+common.Getenv("API_SERVER_PORT", "3000"), apiserver.NewRouter(
-		apiserver.NewConfigurationApiController(apiservices.NewConfigurationApiService()),
-		apiserver.NewVersionApiController(apiservices.NewVersionApiService()),
-		apiserver.NewCustomizationApiController(apiservices.NewCustomizationApiService()),
-		apiserver.NewDevicesApiController(apiservices.NewDevicesApiService()),
-	))
+	err := nethttp.ListenAndServe(":"+common.Getenv("API_SERVER_PORT", "3000"), utilshttp.NewCORSEnabledHandler(
+		apiserver.NewRouter(
+			apiserver.NewConfigurationApiController(apiservices.NewConfigurationApiService()),
+			apiserver.NewVersionApiController(apiservices.NewVersionApiService()),
+			apiserver.NewCustomizationApiController(apiservices.NewCustomizationApiService()),
+			apiserver.NewDevicesApiController(apiservices.NewDevicesApiService()),
+		)))
 	log.Fatal("main", "Error in API Server: %v", err)
 }
