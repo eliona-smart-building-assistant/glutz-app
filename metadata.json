@@ -2,8 +2,8 @@
  "name": "glutz",
  "elionaMinVersion": "v10.1.0",
   "displayName": {
-    "en": "Glutz App",
-    "de": "Glutz App"
+    "en": "Glutz",
+    "de": "Glutz"
   },
   "description": {
     "en": "The Glutz App allows Glutz devices to communicate with Eliona.",
