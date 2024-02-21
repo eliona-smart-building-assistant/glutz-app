@@ -18,6 +18,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/eliona-smart-building-assistant/go-eliona/app"
+	"github.com/eliona-smart-building-assistant/go-eliona/dashboard"
+	"github.com/eliona-smart-building-assistant/go-utils/db"
 	utilshttp "github.com/eliona-smart-building-assistant/go-utils/http"
 	"glutz/apiserver"
 	"glutz/apiservices"
@@ -55,7 +58,22 @@ type OutputData struct {
 	Open float64
 }
 
-func checkConfigandSetActiveState() {
+func initialization() {
+	ctx := context.Background()
+
+	// Necessary to close used init resources
+	conn := db.NewInitConnectionWithContextAndApplicationName(ctx, app.AppName())
+	defer conn.Close(ctx)
+
+	// Init the app before the first run.
+	app.Init(db.Pool(), app.AppName(),
+		asset.InitAssetTypeFile("eliona/asset-type-glutz_device.json"),
+		dashboard.InitWidgetTypeFile("eliona/widget-type-glutz.json"),
+		app.ExecSqlFile("conf/init.sql"),
+	)
+}
+
+func checkConfigAndSetActiveState() {
 	configs, err := conf.GetConfigs(context.Background())
 	if err != nil {
 		log.Fatal("conf", "Couldn't read configs from DB: %v", err)

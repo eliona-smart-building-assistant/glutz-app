@@ -31,6 +31,7 @@ FROM eliona/base-alpine:latest AS target
 COPY --from=build /app ./
 COPY conf/*.sql ./conf/
 COPY openapi.yaml /
+COPY metadata.json /
 COPY eliona/*.json ./eliona/
 
 ENV APPNAME=glutz

@@ -13,7 +13,7 @@ func GlutzDashboard(projectId string) (api.Dashboard, error) {
 
 	dashboard.Widgets = []api.Widget{}
 
-	assets, _, err := client.NewClient().AssetsApi.
+	assets, _, err := client.NewClient().AssetsAPI.
 		GetAssets(client.AuthenticationContext()).
 		AssetTypeName("glutz_device").
 		ProjectId(projectId).
