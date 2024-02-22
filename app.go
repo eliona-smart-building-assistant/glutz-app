@@ -66,7 +66,7 @@ func initialization() {
 	defer conn.Close(ctx)
 
 	// Init the app before the first run.
-	app.Init(db.Pool(), app.AppName(),
+	app.Init(conn, app.AppName(),
 		asset.InitAssetTypeFile("eliona/asset-type-glutz_device.json"),
 		dashboard.InitWidgetTypeFile("eliona/widget-type-glutz.json"),
 		app.ExecSqlFile("conf/init.sql"),
